@@ -1,0 +1,34 @@
+name: PR Build
+
+on:
+  pull_request:
+    branches: [ main ]
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  Configuration: Release
+  Platform: x64
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore
+        run: dotnet restore WinAIBar.slnx
+
+      - name: Build
+        run: dotnet build WinAIBar.slnx --no-restore -c ${{ env.Configuration }} -p:Platform=${{ env.Platform }}
+
+      - name: Test
+        run: dotnet test tests/WinAIBar.Tests/WinAIBar.Tests.csproj --no-build -c ${{ env.Configuration }} -p:Platform=${{ env.Platform }}
