@@ -40,7 +40,7 @@ public static partial class AppHost
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
 
         builder.Logging.ClearProviders();
-        ConfigureLogging(builder);
+        ConfigureLogging();
         builder.Logging.AddSerilog(Log.Logger, dispose: true);
 
         ConfigureServices(builder.Services);
@@ -74,7 +74,7 @@ public static partial class AppHost
         }
     }
 
-    private static void ConfigureLogging(HostApplicationBuilder builder)
+    private static void ConfigureLogging()
     {
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Information()

@@ -11,9 +11,6 @@ internal sealed class NavigationService(IPageRouter router) : INavigationService
     {
         ArgumentNullException.ThrowIfNull(contentFrame);
         _frame = contentFrame;
-        var defaultPage = router.Resolve("Dashboard");
-        if (defaultPage is not null)
-            _frame.Navigate(defaultPage);
     }
 
     public void NavigateTo(string tag)
