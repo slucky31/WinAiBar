@@ -5,6 +5,9 @@
   <Project Path="src\WinAIBar\WinAIBar.csproj">
     <Platform Solution="*|x64" Project="x64" />
   </Project>
+  <Project Path="src\WinAIBar.Core\WinAIBar.Core.csproj">
+    <Platform Solution="*|x64" Project="AnyCPU" />
+  </Project>
   <Project Path="tests\WinAIBar.Tests\WinAIBar.Tests.csproj">
     <Platform Solution="*|x64" Project="x64" />
   </Project>

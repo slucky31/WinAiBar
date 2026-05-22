@@ -3,7 +3,11 @@
     "allow": [
       "PowerShell(dotnet workload list *)",
       "Bash(dotnet build *)",
-      "Bash(dotnet test *)"
+      "Bash(dotnet test *)",
+      "Bash(dotnet restore *)",
+      "mcp__github__get_pull_request",
+      "mcp__github__get_pull_request_comments",
+      "mcp__github__get_pull_request_reviews"
     ]
   }
 }

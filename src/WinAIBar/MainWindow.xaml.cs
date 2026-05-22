@@ -1,13 +1,16 @@
 using Microsoft.UI.Xaml;
 using WinAIBar.Infrastructure;
+using WinAIBar.Views;
 
 namespace WinAIBar;
 
 public sealed partial class MainWindow : Window
 {
-    public MainWindow()
+    public MainWindow(Shell shell)
     {
+        ArgumentNullException.ThrowIfNull(shell);
         InitializeComponent();
+        Content = shell;
         Closed += OnClosed;
     }
 
