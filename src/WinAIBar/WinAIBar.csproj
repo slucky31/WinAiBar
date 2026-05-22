@@ -27,6 +27,7 @@
     <PackageReference Include="Serilog.Sinks.File" />
     <PackageReference Include="Serilog.Sinks.Debug" />
     <PackageReference Include="Polly" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="appsettings.json">
