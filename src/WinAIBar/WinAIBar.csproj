@@ -20,7 +20,7 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.Extensions.Http" />
-    <PackageReference Include="Microsoft.Extensions.Http.Polly" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Serilog.Extensions.Hosting" />
@@ -28,6 +28,9 @@
     <PackageReference Include="Serilog.Sinks.Debug" />
     <PackageReference Include="Polly" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WinAIBar.Core\WinAIBar.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="appsettings.json">

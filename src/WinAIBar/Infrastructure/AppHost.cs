@@ -8,10 +8,14 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Polly;
-using Polly.Retry;
 using Serilog;
+using WinAIBar.Services.Navigation;
+using WinAIBar.ViewModels;
+using WinAIBar.Views;
 
 namespace WinAIBar.Infrastructure;
 
@@ -29,24 +33,13 @@ public static partial class AppHost
             return;
         }
 
-        Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Information()
-            .Enrich.FromLogContext()
-            .WriteTo.Debug(formatProvider: CultureInfo.InvariantCulture)
-            .WriteTo.File(
-                path: Path.Combine(PathProvider.LogsDirectory, "winaibar-.log"),
-                rollingInterval: RollingInterval.Day,
-                retainedFileCountLimit: 7,
-                shared: true,
-                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}",
-                formatProvider: CultureInfo.InvariantCulture)
-            .CreateLogger();
-
         var builder = Host.CreateApplicationBuilder();
 
         builder.Configuration
             .SetBasePath(AppContext.BaseDirectory)
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+
+        ConfigureLogging(builder);
 
         builder.Logging.ClearProviders();
         builder.Logging.AddSerilog(Log.Logger, dispose: true);
@@ -84,49 +77,56 @@ public static partial class AppHost
         }
     }
 
-    private static void ConfigureServices(IServiceCollection services)
+    private static void ConfigureLogging(HostApplicationBuilder builder)
     {
-        services.AddHttpClient(string.Empty)
-            .AddPolicyHandler((_, _) => BuildRetryPolicy());
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Information()
+            .Enrich.FromLogContext()
+            .WriteTo.Debug(formatProvider: CultureInfo.InvariantCulture)
+            .WriteTo.File(
+                path: Path.Combine(PathProvider.LogsDirectory, "winaibar-.log"),
+                rollingInterval: RollingInterval.Day,
+                retainedFileCountLimit: 7,
+                shared: true,
+                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}",
+                formatProvider: CultureInfo.InvariantCulture)
+            .CreateLogger();
     }
 
-    private static AsyncRetryPolicy<HttpResponseMessage> BuildRetryPolicy()
+    private static void ConfigureServices(IServiceCollection services)
     {
-        var jitter = Random.Shared;
+        services.AddSingleton<INavigationService, NavigationService>();
+        services.AddTransient<ShellViewModel>();
+        services.AddTransient<Shell>();
 
-        return Policy<HttpResponseMessage>
-            .Handle<HttpRequestException>()
-            .OrResult(response =>
-                (int)response.StatusCode >= 500 ||
-                response.StatusCode == HttpStatusCode.RequestTimeout ||
-                response.StatusCode == HttpStatusCode.TooManyRequests)
-            .WaitAndRetryAsync(
-                retryCount: 3,
-                sleepDurationProvider: (attempt, outcome, _) =>
+        services.AddHttpClient(Options.DefaultName)
+            .AddResilienceHandler("default", static builder =>
+            {
+                builder.AddRetry(new HttpRetryStrategyOptions
                 {
-                    var retryAfter = outcome?.Result?.Headers?.RetryAfter;
-                    if (retryAfter is not null)
+                    MaxRetryAttempts = 3,
+                    BackoffType = DelayBackoffType.Exponential,
+                    UseJitter = true,
+                    ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
+                        .Handle<HttpRequestException>()
+                        .HandleResult(r =>
+                            (int)r.StatusCode >= 500 ||
+                            r.StatusCode == HttpStatusCode.RequestTimeout ||
+                            r.StatusCode == HttpStatusCode.TooManyRequests),
+                    DelayGenerator = static args =>
                     {
-                        if (retryAfter.Delta is { } delta && delta > TimeSpan.Zero)
-                        {
-                            return delta;
-                        }
-
-                        if (retryAfter.Date is { } date)
+                        var retryAfter = args.Outcome.Result?.Headers?.RetryAfter;
+                        if (retryAfter?.Delta is { } delta && delta > TimeSpan.Zero)
+                            return new ValueTask<TimeSpan?>(delta);
+                        if (retryAfter?.Date is { } date)
                         {
                             var wait = date - DateTimeOffset.UtcNow;
-                            if (wait > TimeSpan.Zero)
-                            {
-                                return wait;
-                            }
+                            if (wait > TimeSpan.Zero) return new ValueTask<TimeSpan?>(wait);
                         }
+                        return new ValueTask<TimeSpan?>((TimeSpan?)null);
                     }
-
-                    var baseMs = Math.Pow(2, attempt) * 200;
-                    var jitterMs = jitter.Next(0, 200);
-                    return TimeSpan.FromMilliseconds(baseMs + jitterMs);
-                },
-                onRetryAsync: (_, _, _, _) => Task.CompletedTask);
+                });
+            });
     }
 
     [LoggerMessage(EventId = 1, Level = LogLevel.Information, Message = "WinAIBar started v{Version}")]

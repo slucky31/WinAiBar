@@ -1,12 +1,18 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using WinAIBar.Services.Navigation;
 
 namespace WinAIBar.ViewModels;
 
 public partial class ShellViewModel : ObservableObject
 {
-    private Action<string>? _navigateCallback;
+    private readonly INavigationService _navigationService;
     private object? _selectedItem;
+
+    public ShellViewModel(INavigationService navigationService)
+    {
+        _navigationService = navigationService;
+    }
 
     public object? SelectedItem
     {
@@ -14,14 +20,6 @@ public partial class ShellViewModel : ObservableObject
         set => SetProperty(ref _selectedItem, value);
     }
 
-    public void Initialize(Action<string> navigateCallback)
-    {
-        _navigateCallback = navigateCallback;
-    }
-
     [RelayCommand]
-    private void Navigate(string tag)
-    {
-        _navigateCallback?.Invoke(tag);
-    }
+    private void Navigate(string tag) => _navigationService.NavigateTo(tag);
 }
