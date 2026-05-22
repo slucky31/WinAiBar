@@ -13,8 +13,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Polly;
 using Serilog;
+using WinAIBar.Core.Services.Navigation;
+using WinAIBar.Core.ViewModels;
 using WinAIBar.Services.Navigation;
-using WinAIBar.ViewModels;
 using WinAIBar.Views;
 
 namespace WinAIBar.Infrastructure;
@@ -28,10 +29,9 @@ public static partial class AppHost
 
     public static async Task StartAsync()
     {
+        // Single-threaded startup: OnLaunched is always called once on the UI thread.
         if (_current is not null)
-        {
             return;
-        }
 
         var builder = Host.CreateApplicationBuilder();
 
@@ -39,9 +39,8 @@ public static partial class AppHost
             .SetBasePath(AppContext.BaseDirectory)
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
 
-        ConfigureLogging(builder);
-
         builder.Logging.ClearProviders();
+        ConfigureLogging(builder);
         builder.Logging.AddSerilog(Log.Logger, dispose: true);
 
         ConfigureServices(builder.Services);
@@ -61,9 +60,7 @@ public static partial class AppHost
     public static async Task StopAsync()
     {
         if (_current is null)
-        {
             return;
-        }
 
         try
         {
@@ -84,7 +81,7 @@ public static partial class AppHost
             .Enrich.FromLogContext()
             .WriteTo.Debug(formatProvider: CultureInfo.InvariantCulture)
             .WriteTo.File(
-                path: Path.Combine(PathProvider.LogsDirectory, "winaibar-.log"),
+                path: Path.Combine(PathProvider.Instance.LogsDirectory, "winaibar-.log"),
                 rollingInterval: RollingInterval.Day,
                 retainedFileCountLimit: 7,
                 shared: true,
@@ -95,9 +92,16 @@ public static partial class AppHost
 
     private static void ConfigureServices(IServiceCollection services)
     {
+        services.AddSingleton<IPathProvider>(PathProvider.Instance);
+
+        services.AddSingleton<IPageRouter, PageRouter>();
         services.AddSingleton<INavigationService, NavigationService>();
+        services.AddSingleton<INavigationFrame>(sp =>
+            (INavigationFrame)sp.GetRequiredService<INavigationService>());
+
         services.AddTransient<ShellViewModel>();
         services.AddTransient<Shell>();
+        services.AddTransient<MainWindow>();
 
         services.AddHttpClient(Options.DefaultName)
             .AddResilienceHandler("default", static builder =>
@@ -132,7 +136,5 @@ public static partial class AppHost
     [LoggerMessage(EventId = 1, Level = LogLevel.Information, Message = "WinAIBar started v{Version}")]
     private static partial void LogStarted(Microsoft.Extensions.Logging.ILogger logger, string version);
 
-    private sealed class HostMarker
-    {
-    }
+    private sealed class HostMarker { }
 }

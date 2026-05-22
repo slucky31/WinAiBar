@@ -1,6 +1,7 @@
 using System;
-using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
+using Serilog;
 using WinAIBar.Infrastructure;
 
 namespace WinAIBar;
@@ -22,12 +23,13 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Fatal startup error: {ex}");
+            Log.Fatal(ex, "Fatal startup error");
+            await Log.CloseAndFlushAsync().ConfigureAwait(false);
             Current.Exit();
             return;
         }
 
-        _mainWindow = new MainWindow();
+        _mainWindow = AppHost.Current.Services.GetRequiredService<MainWindow>();
         _mainWindow.Activate();
     }
 }

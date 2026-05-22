@@ -1,32 +1,25 @@
 using Microsoft.UI.Xaml.Controls;
-using WinAIBar.Views.Pages;
+using WinAIBar.Core.Services.Navigation;
 
 namespace WinAIBar.Services.Navigation;
 
-public sealed class NavigationService : INavigationService
+internal sealed class NavigationService(IPageRouter router) : INavigationService, INavigationFrame
 {
     private Frame? _frame;
 
-    private static readonly Dictionary<string, Type> PageRegistry = new()
+    void INavigationFrame.Initialize(Frame contentFrame)
     {
-        ["Dashboard"] = typeof(DashboardPage),
-        ["Claude"]    = typeof(ClaudePage),
-        ["Copilot"]   = typeof(CopilotPage),
-        ["History"]   = typeof(HistoryPage),
-        ["Health"]    = typeof(HealthPage),
-        ["Cost"]      = typeof(CostPage),
-        ["Settings"]  = typeof(SettingsPage),
-    };
-
-    public void Initialize(Frame contentFrame)
-    {
+        ArgumentNullException.ThrowIfNull(contentFrame);
         _frame = contentFrame;
-        _frame.Navigate(typeof(DashboardPage));
+        var defaultPage = router.Resolve("Dashboard");
+        if (defaultPage is not null)
+            _frame.Navigate(defaultPage);
     }
 
     public void NavigateTo(string tag)
     {
-        if (_frame is not null && PageRegistry.TryGetValue(tag, out var pageType))
+        var pageType = router.Resolve(tag);
+        if (_frame is not null && pageType is not null)
             _frame.Navigate(pageType);
     }
 

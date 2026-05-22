@@ -1,8 +1,8 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.UI.ViewManagement;
+using WinAIBar.Core.ViewModels;
 using WinAIBar.Services.Navigation;
-using WinAIBar.ViewModels;
 
 namespace WinAIBar.Views;
 
@@ -11,11 +11,13 @@ public sealed partial class Shell : UserControl
     private readonly UISettings _uiSettings = new();
     public ShellViewModel ViewModel { get; }
 
-    public Shell(ShellViewModel viewModel, INavigationService navigationService)
+    public Shell(ShellViewModel viewModel, INavigationFrame navigationFrame)
     {
+        ArgumentNullException.ThrowIfNull(viewModel);
+        ArgumentNullException.ThrowIfNull(navigationFrame);
         ViewModel = viewModel;
         InitializeComponent();
-        navigationService.Initialize(ContentFrame);
+        navigationFrame.Initialize(ContentFrame);
         NavView.SelectedItem = NavView.MenuItems[0];
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;

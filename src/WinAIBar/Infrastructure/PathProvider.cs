@@ -3,14 +3,21 @@ using System.IO;
 
 namespace WinAIBar.Infrastructure;
 
-public static class PathProvider
+public sealed class PathProvider : IPathProvider
 {
-    public static string LocalAppData { get; } = EnsureDirectory(
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WinAIBar"));
+    public static readonly PathProvider Instance = new();
 
-    public static string LogsDirectory { get; } = EnsureDirectory(Path.Combine(LocalAppData, "logs"));
+    public string LocalAppData { get; }
+    public string LogsDirectory { get; }
+    public string DataDirectory { get; }
 
-    public static string DataDirectory { get; } = EnsureDirectory(Path.Combine(LocalAppData, "data"));
+    private PathProvider()
+    {
+        LocalAppData = EnsureDirectory(
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WinAIBar"));
+        LogsDirectory = EnsureDirectory(Path.Combine(LocalAppData, "logs"));
+        DataDirectory = EnsureDirectory(Path.Combine(LocalAppData, "data"));
+    }
 
     private static string EnsureDirectory(string path)
     {
