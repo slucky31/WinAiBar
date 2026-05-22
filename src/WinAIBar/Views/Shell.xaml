@@ -9,6 +9,7 @@
     <NavigationView x:Name="NavView"
                     PaneDisplayMode="LeftCompact"
                     IsSettingsVisible="False"
+                    SelectedItem="{x:Bind ViewModel.SelectedItem, Mode=TwoWay}"
                     SelectionChanged="NavView_SelectionChanged">
         <NavigationView.MenuItems>
             <NavigationViewItem Content="Dashboard" Tag="Dashboard">

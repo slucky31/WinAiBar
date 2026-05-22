@@ -16,9 +16,20 @@ public sealed partial class Shell : UserControl
     {
         InitializeComponent();
         ViewModel.Initialize(NavigateTo);
-        _uiSettings.ColorValuesChanged += OnColorValuesChanged;
+        Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
         ContentFrame.Navigate(typeof(DashboardPage));
         NavView.SelectedItem = NavView.MenuItems[0];
+    }
+
+    private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        _uiSettings.ColorValuesChanged += OnColorValuesChanged;
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        _uiSettings.ColorValuesChanged -= OnColorValuesChanged;
     }
 
     private void OnColorValuesChanged(UISettings sender, object args)
