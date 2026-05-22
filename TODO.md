@@ -40,3 +40,6 @@
 
   Attache le PROMPTS.md en pièce jointe au début de la conversation, puis demande "Exécute le Prompt N". Mais tu n'as pas l'exécution de commandes — il te faudra recopier les diffs à la
   main dans VS. Claude Code est nettement plus efficace pour ce projet.
+
+
+  dotnet run --project src\WinAIBar -p:Platform=x64
