@@ -30,7 +30,7 @@ public sealed class UsageQuotaTests
     }
 
     [Fact]
-    public void NullableFieldsAreNullWhenOmitted()
+    public void NullableFieldsAcceptExplicitNullValues()
     {
         var quota = new UsageQuota(
             Key: "weekly-all",
