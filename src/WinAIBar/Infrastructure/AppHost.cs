@@ -57,8 +57,12 @@ public static partial class AppHost
         await host.StartAsync().ConfigureAwait(false);
         _current = host;
 
-        var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0";
-        LogStarted(host.Services.GetRequiredService<ILogger<HostMarker>>(), version);
+        var logger = host.Services.GetRequiredService<ILogger<HostMarker>>();
+        if (logger.IsEnabled(LogLevel.Information))
+        {
+            var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0";
+            LogStarted(logger, version);
+        }
     }
 
     public static async Task StopAsync()
