@@ -1,4 +1,5 @@
 using Microsoft.UI.Xaml;
+using WinAIBar.Infrastructure;
 
 namespace WinAIBar;
 
@@ -11,8 +12,10 @@ public partial class App : Application
         InitializeComponent();
     }
 
-    protected override void OnLaunched(LaunchActivatedEventArgs args)
+    protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
+        await AppHost.StartAsync();
+
         _mainWindow = new MainWindow();
         _mainWindow.Activate();
     }
