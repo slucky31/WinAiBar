@@ -11,4 +11,4 @@ winget install SQLite.SQLite
 
  Log : %LOCALAPPDATA%\WinAIBar\logs
 
-https://github.com/sirmalloc/ccstatusline
+[ccstatusline — Claude Code status line reference](https://github.com/sirmalloc/ccstatusline)

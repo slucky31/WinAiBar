@@ -34,7 +34,7 @@ public sealed partial class GitHubDeviceCodeAuthenticator : IGitHubDeviceCodeAut
         };
         request.Headers.Accept.ParseAdd("application/json");
 
-        var response = await _httpClient.SendAsync(request, ct).ConfigureAwait(false);
+        using var response = await _httpClient.SendAsync(request, ct).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         var result = await response.Content.ReadFromJsonAsync<DeviceCodeResponse>(ct).ConfigureAwait(false)
@@ -47,10 +47,15 @@ public sealed partial class GitHubDeviceCodeAuthenticator : IGitHubDeviceCodeAut
     public async Task<string> PollForTokenAsync(DeviceCodeResponse start, IProgress<string>? progress, CancellationToken ct)
     {
         var intervalSeconds = start.Interval;
+        var deadline = DateTimeOffset.UtcNow.AddSeconds(start.ExpiresIn);
 
         while (true)
         {
             ct.ThrowIfCancellationRequested();
+
+            if (DateTimeOffset.UtcNow >= deadline)
+                throw new DeviceCodeExpiredException("The device code has expired (local deadline reached).");
+
             await Task.Delay(TimeSpan.FromSeconds(intervalSeconds), ct).ConfigureAwait(false);
 
             var formData = new Dictionary<string, string>
@@ -66,7 +71,7 @@ public sealed partial class GitHubDeviceCodeAuthenticator : IGitHubDeviceCodeAut
             };
             request.Headers.Accept.ParseAdd("application/json");
 
-            var response = await _httpClient.SendAsync(request, ct).ConfigureAwait(false);
+            using var response = await _httpClient.SendAsync(request, ct).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
             var tokenResponse = await response.Content.ReadFromJsonAsync<AccessTokenResponse>(ct).ConfigureAwait(false)
@@ -94,7 +99,10 @@ public sealed partial class GitHubDeviceCodeAuthenticator : IGitHubDeviceCodeAut
                 case "access_denied":
                     throw new DeviceCodeAccessDeniedException("The user denied access.");
                 default:
-                    throw new InvalidOperationException($"Unexpected GitHub OAuth error: {tokenResponse.Error}");
+                    throw new InvalidOperationException(
+                        string.IsNullOrEmpty(tokenResponse.Error)
+                            ? "GitHub OAuth response contained neither access_token nor error field."
+                            : $"Unexpected GitHub OAuth error: '{tokenResponse.Error}'.");
             }
         }
     }
