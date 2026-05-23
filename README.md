@@ -10,3 +10,5 @@ winget install SQLite.SQLite
  Microsoft.WindowsAppSDK 1.8
 
  Log : %LOCALAPPDATA%\WinAIBar\logs
+
+[ccstatusline — Claude Code status line reference](https://github.com/sirmalloc/ccstatusline)
