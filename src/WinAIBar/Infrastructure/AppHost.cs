@@ -107,10 +107,7 @@ public static partial class AppHost
         {
             config = config
                 .MinimumLevel.Debug()
-                .MinimumLevel.Override("Microsoft.EntityFrameworkCore", Serilog.Events.LogEventLevel.Warning)
-                .WriteTo.Console(
-                    outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {SourceContext}{NewLine}  {Message:lj}{NewLine}{Exception}",
-                    formatProvider: CultureInfo.InvariantCulture);
+                .MinimumLevel.Override("Microsoft.EntityFrameworkCore", Serilog.Events.LogEventLevel.Warning);
         }
         else
         {
