@@ -6,6 +6,9 @@ namespace WinAIBar.Tests.Services.Anthropic;
 
 public sealed class AnthropicCredentialProviderTests
 {
+    private static string FixturePath(string fileName) =>
+        Path.Combine(AppContext.BaseDirectory, "TestData", fileName);
+
     private static AnthropicCredentialProvider CreateProvider(Func<string, string?> fileReader) =>
         new(fileReader, NullLogger<AnthropicCredentialProvider>.Instance);
 
@@ -23,14 +26,14 @@ public sealed class AnthropicCredentialProviderTests
     public async Task GetAsyncReturnsCredentialsWhenValidJson()
     {
         var json = await File.ReadAllTextAsync(
-            "TestData/anthropic-credentials-valid.json",
+            FixturePath("anthropic-credentials-valid.json"),
             TestContext.Current.CancellationToken);
         var provider = CreateProvider(_ => json);
 
         var result = await provider.GetAsync(TestContext.Current.CancellationToken);
 
         Assert.NotNull(result);
-        Assert.Equal("sk-ant-oaut02-test-access-token-valid", result.AccessToken);
+        Assert.Equal("test-access-token-valid", result.AccessToken);
         Assert.NotNull(result.RefreshToken);
         Assert.NotNull(result.ExpiresAt);
     }
@@ -46,12 +49,35 @@ public sealed class AnthropicCredentialProviderTests
     }
 
     [Fact]
+    public async Task GetAsyncReturnsNullWhenMissingSection()
+    {
+        var json = await File.ReadAllTextAsync(
+            FixturePath("anthropic-credentials-invalid.json"),
+            TestContext.Current.CancellationToken);
+        var provider = CreateProvider(_ => json);
+
+        var result = await provider.GetAsync(TestContext.Current.CancellationToken);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
     public async Task GetAsyncReturnsNullWhenTokenExpired()
     {
         var json = await File.ReadAllTextAsync(
-            "TestData/anthropic-credentials-expired.json",
+            FixturePath("anthropic-credentials-expired.json"),
             TestContext.Current.CancellationToken);
         var provider = CreateProvider(_ => json);
+
+        var result = await provider.GetAsync(TestContext.Current.CancellationToken);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task GetAsyncReturnsNullWhenFileReaderThrows()
+    {
+        var provider = CreateProvider(_ => throw new IOException("permission denied"));
 
         var result = await provider.GetAsync(TestContext.Current.CancellationToken);
 

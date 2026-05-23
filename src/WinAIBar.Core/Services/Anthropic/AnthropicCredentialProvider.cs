@@ -29,6 +29,7 @@ public sealed partial class AnthropicCredentialProvider : IAnthropicCredentialPr
 
     public Task<AnthropicCredentials?> GetAsync(CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         lock (_lock)
         {
             var now = DateTimeOffset.UtcNow;
@@ -57,7 +58,17 @@ public sealed partial class AnthropicCredentialProvider : IAnthropicCredentialPr
 
     private AnthropicCredentials? LoadCredentials(DateTimeOffset now)
     {
-        var content = _fileReader(_credentialsPath);
+        string? content;
+        try
+        {
+            content = _fileReader(_credentialsPath);
+        }
+        catch (Exception ex)
+        {
+            LogReadError(_logger, ex);
+            return null;
+        }
+
         if (content is null)
         {
             LogFileNotFound(_logger, _credentialsPath);
@@ -98,6 +109,8 @@ public sealed partial class AnthropicCredentialProvider : IAnthropicCredentialPr
                 expiresAtEl.TryGetInt64(out var expiresAtMs))
             {
                 expiresAt = DateTimeOffset.FromUnixTimeMilliseconds(expiresAtMs);
+                // Grace period: treat the token as expired only after 60s past its expiry
+                // to tolerate minor clock skew between the machine and Anthropic servers.
                 if (expiresAt.Value < now.AddSeconds(-60))
                 {
                     LogTokenExpired(_logger, expiresAt.Value);
@@ -109,6 +122,9 @@ public sealed partial class AnthropicCredentialProvider : IAnthropicCredentialPr
             return new AnthropicCredentials(accessToken, refreshToken, expiresAt);
         }
     }
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to read Anthropic credentials file")]
+    private static partial void LogReadError(ILogger logger, Exception ex);
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "Anthropic credentials file not found: {Path}")]
     private static partial void LogFileNotFound(ILogger logger, string path);
