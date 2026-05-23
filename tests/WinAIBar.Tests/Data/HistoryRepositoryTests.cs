@@ -126,9 +126,6 @@ public sealed class HistoryRepositoryTests : IDisposable
         await repo.PurgeOlderThanAsync(now.AddDays(-1), ct);
 
         Assert.Equal(1, await _context.Snapshots.CountAsync(ct));
-        Assert.Equal(0, await _context.Quotas
-            .Join(_context.Snapshots.Where(s => s.CapturedAt < now.AddDays(-1)),
-                q => q.SnapshotId, s => s.Id, (q, _) => q)
-            .CountAsync(ct));
+        Assert.Equal(1, await _context.Quotas.CountAsync(ct));
     }
 }

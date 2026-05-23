@@ -46,13 +46,21 @@ public static partial class AppHost
 
         var host = builder.Build();
         await host.StartAsync().ConfigureAwait(false);
-        _current = host;
 
-        using (var scope = host.Services.CreateScope())
+        try
         {
+            using var scope = host.Services.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<WinAIBarDbContext>();
             await dbContext.Database.MigrateAsync().ConfigureAwait(false);
         }
+        catch
+        {
+            await host.StopAsync().ConfigureAwait(false);
+            host.Dispose();
+            throw;
+        }
+
+        _current = host;
 
         var logger = host.Services.GetRequiredService<ILogger<HostMarker>>();
         if (logger.IsEnabled(LogLevel.Information))

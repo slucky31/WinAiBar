@@ -64,25 +64,25 @@ public partial class HistoryRepository(WinAIBarDbContext context, ILogger<Histor
 
     public async Task PurgeOlderThanAsync(DateTimeOffset cutoff, CancellationToken ct)
     {
-        var ids = await context.Snapshots
-            .Where(s => s.CapturedAt < cutoff)
-            .Select(s => s.Id)
-            .ToListAsync(ct)
-            .ConfigureAwait(false);
-
-        if (ids.Count == 0) return;
+        await using var transaction = await context.Database.BeginTransactionAsync(ct).ConfigureAwait(false);
 
         await context.Quotas
-            .Where(q => ids.Contains(q.SnapshotId))
+            .Where(q => context.Snapshots
+                .Where(s => s.CapturedAt < cutoff)
+                .Select(s => s.Id)
+                .Contains(q.SnapshotId))
             .ExecuteDeleteAsync(ct)
             .ConfigureAwait(false);
 
-        await context.Snapshots
-            .Where(s => ids.Contains(s.Id))
+        var count = await context.Snapshots
+            .Where(s => s.CapturedAt < cutoff)
             .ExecuteDeleteAsync(ct)
             .ConfigureAwait(false);
 
-        LogPurged(logger, ids.Count, cutoff);
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+
+        if (count > 0)
+            LogPurged(logger, count, cutoff);
     }
 
     private static ProviderSnapshot ToSnapshot(SnapshotEntity entity)
