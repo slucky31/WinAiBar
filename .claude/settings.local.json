@@ -18,7 +18,10 @@
       "Bash(Sort-Object)",
       "Bash(dotnet ef *)",
       "PowerShell(Get-WinEvent -LogName Application -MaxEvents 20 | Where-Object { $_.LevelDisplayName -in @\\('Error','Critical'\\) -and $_.TimeCreated -gt \\(Get-Date\\).Date } | Select-Object TimeCreated, LevelDisplayName, Message | Format-List)",
-      "PowerShell(Get-Content *)"
+      "PowerShell(Get-Content *)",
+      "mcp__github__list_pull_requests",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }
