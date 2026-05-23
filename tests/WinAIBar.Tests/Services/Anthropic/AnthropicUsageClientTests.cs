@@ -1,7 +1,11 @@
 using System.Net;
 using System.Text;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http.Resilience;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
+using Polly;
 using WinAIBar.Core.Models;
 using WinAIBar.Core.Services.Anthropic;
 using Xunit;
@@ -66,9 +70,26 @@ public sealed class AnthropicUsageClientTests
             Content = new StringContent(ValidJson, Encoding.UTF8, "application/json")
         };
         using var innerHandler = new QueuedResponseHandler([first, second]);
-        using var retryHandler = new SingleRetryOn429Handler(innerHandler);
-        using var httpClient = new HttpClient(retryHandler) { BaseAddress = new Uri("https://api.anthropic.com") };
-        var client = new AnthropicUsageClient(httpClient, CreateCredProvider(), NullLogger<AnthropicUsageClient>.Instance);
+
+        var services = new ServiceCollection();
+        services.AddSingleton<IAnthropicCredentialProvider>(CreateCredProvider());
+        services.AddSingleton<ILogger<AnthropicUsageClient>>(NullLogger<AnthropicUsageClient>.Instance);
+        services.AddHttpClient<IAnthropicUsageClient, AnthropicUsageClient>(client =>
+                client.BaseAddress = new Uri("https://api.anthropic.com"))
+            .ConfigurePrimaryHttpMessageHandler(() => innerHandler)
+            .AddResilienceHandler("test", builder =>
+                builder.AddRetry(new HttpRetryStrategyOptions
+                {
+                    MaxRetryAttempts = 1,
+                    Delay = TimeSpan.Zero,
+                    BackoffType = DelayBackoffType.Constant,
+                    UseJitter = false,
+                    ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
+                        .HandleResult(r => r.StatusCode == HttpStatusCode.TooManyRequests)
+                }));
+
+        await using var provider = services.BuildServiceProvider();
+        var client = provider.GetRequiredService<IAnthropicUsageClient>();
 
         var snapshot = await client.FetchAsync(TestContext.Current.CancellationToken);
 
@@ -91,20 +112,6 @@ public sealed class AnthropicUsageClientTests
         {
             CallCount++;
             return Task.FromResult(_queue.Dequeue());
-        }
-    }
-
-    private sealed class SingleRetryOn429Handler(HttpMessageHandler inner) : DelegatingHandler(inner)
-    {
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
-        {
-            var response = await base.SendAsync(request, ct);
-            if (response.StatusCode == HttpStatusCode.TooManyRequests)
-            {
-                response.Dispose();
-                response = await base.SendAsync(request, ct);
-            }
-            return response;
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using WinAIBar.Core.Models;
+using WinAIBar.Core.Services.Anthropic.Dto;
 
 namespace WinAIBar.Core.Services.Anthropic;
 
@@ -59,24 +60,31 @@ public sealed partial class AnthropicUsageClient : IAnthropicUsageClient
 
     private static ProviderSnapshot ParseSnapshot(string json)
     {
+        var dto = ParseUsageResponse(json);
+        var quotas = dto.Quotas
+            .Select(kvp => MapToUsageQuota(kvp.Key, kvp.Value))
+            .ToList();
+
+        return new ProviderSnapshot(ProviderId.Claude, DateTimeOffset.UtcNow, quotas, json);
+    }
+
+    private static AnthropicUsageResponse ParseUsageResponse(string json)
+    {
         using var doc = JsonDocument.Parse(json);
-        var quotas = new List<UsageQuota>();
+        var rawData = doc.RootElement.Clone();
+        var quotas = new Dictionary<string, AnthropicQuotaDto>();
 
         foreach (var prop in doc.RootElement.EnumerateObject())
         {
-            var quota = ParseQuota(prop.Name, prop.Value);
-            if (quota is not null)
-                quotas.Add(quota);
+            var dto = ParseQuotaDto(prop.Value);
+            if (dto is not null)
+                quotas[prop.Name] = dto;
         }
 
-        return new ProviderSnapshot(
-            ProviderId.Claude,
-            DateTimeOffset.UtcNow,
-            quotas,
-            json);
+        return new AnthropicUsageResponse { RawData = rawData, Quotas = quotas };
     }
 
-    private static UsageQuota? ParseQuota(string key, JsonElement element)
+    private static AnthropicQuotaDto? ParseQuotaDto(JsonElement element)
     {
         if (element.ValueKind != JsonValueKind.Object)
             return null;
@@ -95,28 +103,15 @@ public sealed partial class AnthropicUsageClient : IAnthropicUsageClient
                 resetsAt = DateTimeOffset.FromUnixTimeMilliseconds(ms);
         }
 
-        long? used = null;
-        if (element.TryGetProperty("used", out var usedEl) && usedEl.TryGetInt64(out var usedVal))
-            used = usedVal;
+        long? used = element.TryGetProperty("used", out var usedEl) && usedEl.TryGetInt64(out var usedVal) ? usedVal : null;
+        long? limit = element.TryGetProperty("limit", out var limitEl) && limitEl.TryGetInt64(out var limitVal) ? limitVal : null;
+        string? label = element.TryGetProperty("label", out var labelEl) ? labelEl.GetString() : null;
 
-        long? limit = null;
-        if (element.TryGetProperty("limit", out var limitEl) && limitEl.TryGetInt64(out var limitVal))
-            limit = limitVal;
-
-        string? label = null;
-        if (element.TryGetProperty("label", out var labelEl))
-            label = labelEl.GetString();
-
-        string? unit = null;
-        if (element.TryGetProperty("unit", out var unitEl))
-            unit = unitEl.GetString();
-
-        string? model = null;
-        if (element.TryGetProperty("model", out var modelEl))
-            model = modelEl.GetString();
-
-        return new UsageQuota(key, label ?? key, utilization, resetsAt, used, limit, unit, model);
+        return new AnthropicQuotaDto { Utilization = utilization, ResetsAt = resetsAt, Used = used, Limit = limit, Label = label };
     }
+
+    private static UsageQuota MapToUsageQuota(string key, AnthropicQuotaDto dto) =>
+        new(key, dto.Label ?? key, dto.Utilization, dto.ResetsAt, dto.Used, dto.Limit, null, null);
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Anthropic usage request failed")]
     private static partial void LogRequestFailed(ILogger logger, Exception ex);
