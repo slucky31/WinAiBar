@@ -8,3 +8,5 @@ dotnet tool install --global vpk
 winget install SQLite.SQLite
 
  Microsoft.WindowsAppSDK 1.8
+
+ Log : %LOCALAPPDATA%\WinAIBar\logs
