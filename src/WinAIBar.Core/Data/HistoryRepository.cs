@@ -36,6 +36,7 @@ public partial class HistoryRepository(WinAIBarDbContext context, ILogger<Histor
     public async Task<IReadOnlyList<ProviderSnapshot>> GetRecentAsync(
         ProviderId provider, int count, CancellationToken ct)
     {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(count);
         var entities = await context.Snapshots
             .Where(s => s.Provider == provider)
             .OrderByDescending(s => s.CapturedAt)
@@ -66,6 +67,7 @@ public partial class HistoryRepository(WinAIBarDbContext context, ILogger<Histor
     {
         await using var transaction = await context.Database.BeginTransactionAsync(ct).ConfigureAwait(false);
 
+        // ExecuteDeleteAsync issues raw SQL and does not trigger EF's cascade-delete, so quotas must be removed first.
         await context.Quotas
             .Where(q => context.Snapshots
                 .Where(s => s.CapturedAt < cutoff)

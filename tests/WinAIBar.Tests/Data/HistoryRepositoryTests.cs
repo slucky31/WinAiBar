@@ -7,7 +7,7 @@ using Xunit;
 
 namespace WinAIBar.Tests.Data;
 
-public sealed class HistoryRepositoryTests : IDisposable
+public sealed class HistoryRepositoryTests : IAsyncLifetime
 {
     private readonly SqliteConnection _connection;
     private readonly WinAIBarDbContext _context;
@@ -22,13 +22,15 @@ public sealed class HistoryRepositoryTests : IDisposable
             .Options;
 
         _context = new WinAIBarDbContext(options);
-        _context.Database.EnsureCreated();
     }
 
-    public void Dispose()
+    public async ValueTask InitializeAsync()
+        => await _context.Database.EnsureCreatedAsync().ConfigureAwait(false);
+
+    public async ValueTask DisposeAsync()
     {
-        _context.Dispose();
-        _connection.Dispose();
+        await _context.DisposeAsync().ConfigureAwait(false);
+        await _connection.DisposeAsync().ConfigureAwait(false);
     }
 
     private HistoryRepository CreateRepo() =>

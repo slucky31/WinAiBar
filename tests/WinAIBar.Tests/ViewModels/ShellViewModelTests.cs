@@ -10,6 +10,7 @@ public sealed class ShellViewModelTests
     [Fact]
     public void NavigateCommandExecutesNavigationService()
     {
+        _ = TestContext.Current.CancellationToken;
         var navigationService = Substitute.For<INavigationService>();
         var viewModel = new ShellViewModel(navigationService);
 
@@ -21,6 +22,7 @@ public sealed class ShellViewModelTests
     [Fact]
     public void SelectedItemSetRaisesPropertyChanged()
     {
+        _ = TestContext.Current.CancellationToken;
         var navigationService = Substitute.For<INavigationService>();
         var viewModel = new ShellViewModel(navigationService);
         var raised = false;
@@ -38,6 +40,7 @@ public sealed class ShellViewModelTests
     [Fact]
     public void ConstructorNullNavigationServiceThrowsArgumentNullException()
     {
+        _ = TestContext.Current.CancellationToken;
         Assert.Throws<ArgumentNullException>(() => new ShellViewModel(null!));
     }
 }

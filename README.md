@@ -7,3 +7,4 @@ winget install Microsoft.DotNet.SDK.9
 dotnet tool install --global vpk
 winget install SQLite.SQLite
 
+ Microsoft.WindowsAppSDK 1.8
