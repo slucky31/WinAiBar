@@ -153,6 +153,10 @@ public static partial class AppHost
 
         var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0";
         services.AddSingleton(new GitHubOAuthOptions());
+        services.AddSingleton<IGitHubTokenStore>(sp =>
+            new GitHubTokenStore(
+                Path.Combine(sp.GetRequiredService<IPathProvider>().LocalAppData, "github.token"),
+                sp.GetRequiredService<ILogger<GitHubTokenStore>>()));
         services.AddHttpClient<IGitHubDeviceCodeAuthenticator, GitHubDeviceCodeAuthenticator>(client =>
         {
             client.DefaultRequestHeaders.UserAgent.ParseAdd($"WinAIBar/{version}");
