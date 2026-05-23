@@ -46,6 +46,10 @@ public sealed partial class GitHubTokenStore : IGitHubTokenStore
             var plainBytes = ProtectedData.Unprotect(encrypted, null, DataProtectionScope.CurrentUser);
             return Encoding.UTF8.GetString(plainBytes);
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             LogTokenLoadFailed(_logger, ex);

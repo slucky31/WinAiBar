@@ -155,7 +155,7 @@ public static partial class AppHost
         services.AddSingleton(new GitHubOAuthOptions());
         services.AddSingleton<IGitHubTokenStore>(sp =>
             new GitHubTokenStore(
-                Path.Combine(sp.GetRequiredService<IPathProvider>().DataDirectory, "github.token"),
+                Path.Combine(sp.GetRequiredService<IPathProvider>().LocalAppData, "github.token"),
                 sp.GetRequiredService<ILogger<GitHubTokenStore>>()));
         services.AddHttpClient<IGitHubDeviceCodeAuthenticator, GitHubDeviceCodeAuthenticator>(client =>
         {
