@@ -121,7 +121,7 @@ public sealed class ClaudePollingServiceTests
     }
 
     [Fact]
-    public void BackoffGrowsExponentiallyAndCappsAtOneHour()
+    public void BackoffGrowsExponentiallyAndCapsAtOneHour()
     {
         var b1 = ClaudePollingService.ComputeBackoff(1);
         var b2 = ClaudePollingService.ComputeBackoff(2);

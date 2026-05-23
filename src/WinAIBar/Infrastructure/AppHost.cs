@@ -38,8 +38,7 @@ public static partial class AppHost
 
         builder.Configuration
             .SetBasePath(AppContext.BaseDirectory)
-            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-            .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
 
         builder.Logging.ClearProviders();
         ConfigureLogging(builder.Environment.IsDevelopment());

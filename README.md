@@ -9,5 +9,4 @@ winget install SQLite.SQLite
 
  Microsoft.WindowsAppSDK 1.8
 
- Log : C:\Users\Nicolas\AppData\Local\WinAIBar\logs
- 
+ Log : %LOCALAPPDATA%\WinAIBar\logs

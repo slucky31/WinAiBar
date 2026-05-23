@@ -117,6 +117,7 @@ public sealed partial class ClaudePollingService : BackgroundService
         var health = new ProviderHealth(
             ProviderId.Claude, ProviderStatus.Unauthorized,
             now, null, "Credentials not available", null);
+        _stateService.UpdateSnapshot(snapshot);
         _stateService.UpdateHealth(health);
         WeakReferenceMessenger.Default.Send(snapshot);
         LogCredentialsUnavailable(_logger);
