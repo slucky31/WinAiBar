@@ -12,6 +12,7 @@ using System.Net;
 using System.Reflection;
 using WinAIBar.Core.Data;
 using WinAIBar.Core.Data.Abstractions;
+using WinAIBar.Core.Infrastructure;
 using WinAIBar.Core.Services.Anthropic;
 using WinAIBar.Core.Services.Navigation;
 using WinAIBar.Core.ViewModels;
@@ -37,10 +38,11 @@ public static partial class AppHost
 
         builder.Configuration
             .SetBasePath(AppContext.BaseDirectory)
-            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+            .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
 
         builder.Logging.ClearProviders();
-        ConfigureLogging();
+        ConfigureLogging(builder.Environment.IsDevelopment());
         builder.Logging.AddSerilog(Log.Logger, dispose: true);
 
         ConfigureServices(builder.Services);
@@ -88,10 +90,9 @@ public static partial class AppHost
         }
     }
 
-    private static void ConfigureLogging()
+    private static void ConfigureLogging(bool isDevelopment)
     {
-        Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Information()
+        var config = new LoggerConfiguration()
             .Enrich.FromLogContext()
             .WriteTo.Debug(formatProvider: CultureInfo.InvariantCulture)
             .WriteTo.File(
@@ -100,8 +101,23 @@ public static partial class AppHost
                 retainedFileCountLimit: 7,
                 shared: true,
                 outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}",
-                formatProvider: CultureInfo.InvariantCulture)
-            .CreateLogger();
+                formatProvider: CultureInfo.InvariantCulture);
+
+        if (isDevelopment)
+        {
+            config = config
+                .MinimumLevel.Debug()
+                .MinimumLevel.Override("Microsoft.EntityFrameworkCore", Serilog.Events.LogEventLevel.Warning)
+                .WriteTo.Console(
+                    outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {SourceContext}{NewLine}  {Message:lj}{NewLine}{Exception}",
+                    formatProvider: CultureInfo.InvariantCulture);
+        }
+        else
+        {
+            config = config.MinimumLevel.Information();
+        }
+
+        Log.Logger = config.CreateLogger();
     }
 
     private static void ConfigureServices(IServiceCollection services)
@@ -124,10 +140,16 @@ public static partial class AppHost
         });
         services.AddScoped<IHistoryRepository, HistoryRepository>();
 
+        services.AddSingleton(TimeProvider.System);
+
         services.AddSingleton<IAnthropicCredentialProvider>(sp =>
             new AnthropicCredentialProvider(
                 path => File.Exists(path) ? File.ReadAllText(path) : null,
                 sp.GetRequiredService<ILogger<AnthropicCredentialProvider>>()));
+
+        services.AddSingleton<IIdleDetector, IdleDetector>();
+        services.AddSingleton<IClaudeStateService, ClaudeStateService>();
+        services.AddHostedService<ClaudePollingService>();
 
         services.AddHttpClient(Options.DefaultName)
             .AddResilienceHandler("default", ConfigureHttpResiliencePolicy);

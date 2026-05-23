@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "WinAIBar (Debug)": {
+      "commandName": "Project",
+      "nativeDebugging": false,
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

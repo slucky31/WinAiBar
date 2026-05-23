@@ -91,6 +91,7 @@ public sealed partial class AnthropicUsageClient : IAnthropicUsageClient
 
         double utilization = 0;
         if (element.TryGetProperty("utilization", out var utilizationEl) &&
+            utilizationEl.ValueKind == JsonValueKind.Number &&
             utilizationEl.TryGetDouble(out var u))
             utilization = u;
 
@@ -99,12 +100,22 @@ public sealed partial class AnthropicUsageClient : IAnthropicUsageClient
         {
             if (resetsAtEl.ValueKind == JsonValueKind.String)
                 resetsAt = resetsAtEl.TryGetDateTimeOffset(out var dt) ? dt : null;
-            else if (resetsAtEl.TryGetInt64(out var ms))
+            else if (resetsAtEl.ValueKind == JsonValueKind.Number && resetsAtEl.TryGetInt64(out var ms))
                 resetsAt = DateTimeOffset.FromUnixTimeMilliseconds(ms);
         }
 
-        long? used = element.TryGetProperty("used", out var usedEl) && usedEl.TryGetInt64(out var usedVal) ? usedVal : null;
-        long? limit = element.TryGetProperty("limit", out var limitEl) && limitEl.TryGetInt64(out var limitVal) ? limitVal : null;
+        long? used = null;
+        if (element.TryGetProperty("used", out var usedEl) &&
+            usedEl.ValueKind == JsonValueKind.Number &&
+            usedEl.TryGetInt64(out var usedVal))
+            used = usedVal;
+
+        long? limit = null;
+        if (element.TryGetProperty("limit", out var limitEl) &&
+            limitEl.ValueKind == JsonValueKind.Number &&
+            limitEl.TryGetInt64(out var limitVal))
+            limit = limitVal;
+
         string? label = element.TryGetProperty("label", out var labelEl) ? labelEl.GetString() : null;
 
         return new AnthropicQuotaDto { Utilization = utilization, ResetsAt = resetsAt, Used = used, Limit = limit, Label = label };
