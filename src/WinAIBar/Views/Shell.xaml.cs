@@ -1,8 +1,8 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Windows.UI.ViewManagement;
 using WinAIBar.Core.ViewModels;
 using WinAIBar.Services.Navigation;
+using Windows.UI.ViewManagement;
 
 namespace WinAIBar.Views;
 

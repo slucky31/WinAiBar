@@ -1,6 +1,3 @@
-using System;
-using System.IO;
-
 namespace WinAIBar.Infrastructure;
 
 public sealed class PathProvider : IPathProvider

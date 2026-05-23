@@ -1,7 +1,7 @@
 using NSubstitute;
-using Xunit;
 using WinAIBar.Core.Services.Navigation;
 using WinAIBar.Core.ViewModels;
+using Xunit;
 
 namespace WinAIBar.Tests.ViewModels;
 
