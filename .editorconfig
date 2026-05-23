@@ -1,0 +1,13 @@
+root = true
+
+[*.cs]
+indent_style = space
+indent_size = 4
+end_of_line = crlf
+charset = utf-8-bom
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+# EF Core generated migration files — relax array-literal rule
+[**/Migrations/*.cs]
+dotnet_diagnostic.CA1861.severity = none

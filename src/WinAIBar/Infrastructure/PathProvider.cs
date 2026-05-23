@@ -2,7 +2,7 @@ namespace WinAIBar.Infrastructure;
 
 public sealed class PathProvider : IPathProvider
 {
-    public static readonly PathProvider Instance = new();
+    internal static readonly PathProvider Instance = new();
 
     public string LocalAppData { get; }
     public string LogsDirectory { get; }

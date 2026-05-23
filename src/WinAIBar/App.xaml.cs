@@ -12,6 +12,7 @@ public partial class App : Application
     public App()
     {
         InitializeComponent();
+        UnhandledException += OnWinUIUnhandledException;
     }
 
     protected override async void OnLaunched(LaunchActivatedEventArgs args)
@@ -19,16 +20,21 @@ public partial class App : Application
         try
         {
             await AppHost.StartAsync();
+            _mainWindow = AppHost.Current.Services.GetRequiredService<MainWindow>();
+            _mainWindow.Activate();
         }
         catch (Exception ex)
         {
             Log.Fatal(ex, "Fatal startup error");
             await Log.CloseAndFlushAsync().ConfigureAwait(false);
             Current.Exit();
-            return;
         }
+    }
 
-        _mainWindow = AppHost.Current.Services.GetRequiredService<MainWindow>();
-        _mainWindow.Activate();
+    private static void OnWinUIUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+    {
+        Log.Fatal(e.Exception, "Unhandled WinUI exception: {Message}", e.Message);
+        Log.CloseAndFlush();
+        e.Handled = true;
     }
 }
