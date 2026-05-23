@@ -131,6 +131,15 @@ public static partial class AppHost
 
         services.AddHttpClient(Options.DefaultName)
             .AddResilienceHandler("default", ConfigureHttpResiliencePolicy);
+
+        var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0";
+        services.AddHttpClient<IAnthropicUsageClient, AnthropicUsageClient>(client =>
+        {
+            client.BaseAddress = new Uri("https://api.anthropic.com");
+            client.DefaultRequestHeaders.Add("anthropic-beta", "oauth-2025-04-20");
+            client.DefaultRequestHeaders.UserAgent.ParseAdd($"WinAIBar/{version}");
+        })
+        .AddResilienceHandler("anthropic", ConfigureHttpResiliencePolicy);
     }
 
     private static void ConfigureHttpResiliencePolicy(ResiliencePipelineBuilder<HttpResponseMessage> builder)
