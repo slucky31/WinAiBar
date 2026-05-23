@@ -18,4 +18,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\WinAIBar.Core\WinAIBar.Core.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="TestData\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

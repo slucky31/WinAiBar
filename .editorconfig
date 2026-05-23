@@ -1,13 +1,294 @@
 root = true
 
-[*.cs]
-indent_style = space
-indent_size = 4
-end_of_line = crlf
-charset = utf-8-bom
+# ────────────────────────────────────────────────────────────────────────────
+# Tous les fichiers
+# ────────────────────────────────────────────────────────────────────────────
+[*]
+indent_style             = space
+end_of_line              = crlf
 trim_trailing_whitespace = true
-insert_final_newline = true
+insert_final_newline     = true
 
-# EF Core generated migration files — relax array-literal rule
+# ────────────────────────────────────────────────────────────────────────────
+# C#
+# ────────────────────────────────────────────────────────────────────────────
+[*.cs]
+indent_size = 4
+charset     = utf-8-bom
+
+# ── Directives using ─────────────────────────────────────────────────────────
+# Les usings sont triés purement par ordre alphabétique (sans remonter System.*
+# en tête) et sans ligne vide entre les groupes — pattern observé dans AppHost.cs.
+dotnet_sort_system_directives_first      = false
+dotnet_separate_import_directive_groups  = false
+
+# ── Espaces de noms ──────────────────────────────────────────────────────────
+# Tous les fichiers utilisent la forme file-scoped (namespace Foo.Bar;)
+csharp_style_namespace_declarations = file_scoped:warning
+
+# ── var ──────────────────────────────────────────────────────────────────────
+# var utilisé partout pour les variables locales (var now = ..., var scope = ...)
+csharp_style_var_for_built_in_types  = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere           = true:suggestion
+
+# ── Membres à corps d'expression ─────────────────────────────────────────────
+# Utilisés sur les propriétés (=> Set<T>()) et certaines méthodes simples
+csharp_style_expression_bodied_properties    = true:suggestion
+csharp_style_expression_bodied_indexers      = true:suggestion
+csharp_style_expression_bodied_accessors     = true:suggestion
+csharp_style_expression_bodied_methods       = when_on_single_line:suggestion
+csharp_style_expression_bodied_constructors  = false:suggestion
+csharp_style_expression_bodied_operators     = when_on_single_line:suggestion
+csharp_style_expression_bodied_lambdas       = true:suggestion
+csharp_style_expression_bodied_local_functions = false:suggestion
+
+# ── Constructeurs primaires ──────────────────────────────────────────────────
+# Utilisés dans HistoryRepository(WinAIBarDbContext context, ...)
+csharp_style_prefer_primary_constructors = true:suggestion
+
+# ── Accolades ────────────────────────────────────────────────────────────────
+# Allman : chaque accolade sur sa propre ligne.
+# Si/return simples (early return) : pas d'accolades.
+csharp_new_line_before_open_brace                            = all
+csharp_new_line_before_else                                  = true
+csharp_new_line_before_catch                                 = true
+csharp_new_line_before_finally                               = true
+csharp_new_line_before_members_in_object_initializers        = true
+csharp_new_line_before_members_in_anonymous_types            = true
+csharp_new_line_between_query_expression_clauses             = true
+csharp_prefer_braces                                         = when_multiline:suggestion
+
+# ── using statement vs using var ─────────────────────────────────────────────
+# using var préféré (AppHost.cs : using var scope = ...)
+csharp_prefer_simple_using_statement = true:suggestion
+
+# ── Indentation ──────────────────────────────────────────────────────────────
+csharp_indent_case_contents             = true
+csharp_indent_switch_labels             = true
+csharp_indent_labels                    = one_less_than_current
+csharp_indent_block_contents            = true
+csharp_indent_braces                    = false
+csharp_indent_case_contents_when_block  = true
+
+# ── Espaces ──────────────────────────────────────────────────────────────────
+csharp_space_after_cast                                              = false
+csharp_space_after_keywords_in_control_flow_statements               = true
+csharp_space_between_parentheses                                     = false
+csharp_space_before_colon_in_inheritance_clause                      = true
+csharp_space_after_colon_in_inheritance_clause                       = true
+csharp_space_around_binary_operators                                 = before_and_after
+csharp_space_between_method_declaration_parameter_list_parentheses   = false
+csharp_space_between_method_declaration_empty_parameter_list_parentheses = false
+csharp_space_between_method_call_name_and_opening_parenthesis        = false
+csharp_space_between_method_call_parameter_list_parentheses          = false
+csharp_space_between_method_call_empty_parameter_list_parentheses    = false
+csharp_space_after_comma                                             = true
+csharp_space_before_comma                                            = false
+csharp_space_after_dot                                               = false
+csharp_space_before_dot                                              = false
+csharp_space_after_semicolon_in_for_statement                        = true
+csharp_space_before_semicolon_in_for_statement                       = false
+csharp_space_around_declaration_statements                           = false
+csharp_space_before_open_square_bracket                              = false
+csharp_space_between_empty_square_brackets                           = false
+csharp_space_between_square_brackets                                 = false
+
+# ── Retours à la ligne ───────────────────────────────────────────────────────
+# Autoriser les instructions sur une seule ligne quand c'est intentionnel
+# (ex : if (x) return y; dans AppHost.cs)
+csharp_preserve_single_line_statements = true
+csharp_preserve_single_line_blocks     = true
+
+# ── Ordre des modificateurs ──────────────────────────────────────────────────
+csharp_preferred_modifier_order = public,private,protected,internal,file,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,required,volatile,async:suggestion
+
+# ── Modificateurs d'accessibilité ────────────────────────────────────────────
+# for_non_interface_members : les membres d'interface sont implicitement public
+# en C# — ne pas imposer le mot-clé (convention normale + différences Roslyn CI/local)
+dotnet_style_require_accessibility_modifiers = for_non_interface_members:warning
+
+# ── this. qualification ──────────────────────────────────────────────────────
+# Aucun fichier n'utilise this. pour accéder aux membres
+dotnet_style_qualification_for_field    = false:warning
+dotnet_style_qualification_for_property = false:warning
+dotnet_style_qualification_for_method   = false:warning
+dotnet_style_qualification_for_event    = false:warning
+
+# ── Mots-clés de langage vs types BCL ────────────────────────────────────────
+# int/string/bool préférés à Int32/String/Boolean
+dotnet_style_predefined_type_for_locals_parameters_members = true:warning
+dotnet_style_predefined_type_for_member_access             = true:warning
+
+# ── Initialiseurs ────────────────────────────────────────────────────────────
+dotnet_style_object_initializer             = true:suggestion
+dotnet_style_collection_initializer         = true:suggestion
+# Expressions de collection [] utilisées (Quotas { get; set; } = [])
+dotnet_style_prefer_collection_expression   = when_types_loosely_match:suggestion
+
+# ── Null et coalescing ───────────────────────────────────────────────────────
+# is not null / is null / ?? / ?.  — utilisés partout
+dotnet_style_null_propagation                                       = true:suggestion
+dotnet_style_coalesce_expression                                    = true:suggestion
+csharp_style_throw_expression                                       = true:suggestion
+csharp_style_conditional_delegate_call                              = true:suggestion
+dotnet_style_prefer_is_null_check_over_reference_equality_method   = true:warning
+
+# ── Pattern matching ─────────────────────────────────────────────────────────
+csharp_style_pattern_matching_over_as_with_null_check  = true:suggestion
+csharp_style_pattern_matching_over_is_with_cast_check  = true:suggestion
+csharp_style_prefer_not_pattern                        = true:suggestion
+csharp_style_prefer_pattern_matching                   = true:suggestion
+csharp_style_prefer_switch_expression                  = true:suggestion
+csharp_style_prefer_null_check_over_type_check         = true:suggestion
+
+# ── Inline var / déconstruction ──────────────────────────────────────────────
+csharp_style_inlined_variable_declaration   = true:suggestion
+csharp_style_deconstructed_variable_declaration = true:suggestion
+
+# ── Index et range ───────────────────────────────────────────────────────────
+csharp_style_prefer_index_operator = true:suggestion
+csharp_style_prefer_range_operator = true:suggestion
+
+# ── Propriétés auto ──────────────────────────────────────────────────────────
+dotnet_style_prefer_auto_properties = true:suggestion
+
+# ── Readonly ─────────────────────────────────────────────────────────────────
+dotnet_style_prefer_readonly_struct        = true:suggestion
+dotnet_style_prefer_readonly_struct_member = true:suggestion
+
+# ── Divers ───────────────────────────────────────────────────────────────────
+dotnet_style_explicit_tuple_names                   = true:suggestion
+dotnet_style_prefer_simplified_boolean_expressions  = true:suggestion
+dotnet_style_prefer_compound_assignment             = true:suggestion
+dotnet_style_prefer_simplified_interpolation        = true:suggestion
+csharp_style_prefer_local_over_anonymous_function   = true:suggestion
+
+# ────────────────────────────────────────────────────────────────────────────
+# Conventions de nommage
+# (Directory.Build.props : TreatWarningsAsErrors + EnforceCodeStyleInBuild)
+# ────────────────────────────────────────────────────────────────────────────
+
+# Interfaces : préfixe I + PascalCase  (IHistoryRepository, IAnthropicCredentialProvider…)
+dotnet_naming_rule.interfaces_must_start_with_i.severity = warning
+dotnet_naming_rule.interfaces_must_start_with_i.symbols  = interfaces
+dotnet_naming_rule.interfaces_must_start_with_i.style    = interface_style
+dotnet_naming_symbols.interfaces.applicable_kinds          = interface
+dotnet_naming_symbols.interfaces.applicable_accessibilities = *
+dotnet_naming_style.interface_style.required_prefix        = I
+dotnet_naming_style.interface_style.capitalization         = pascal_case
+
+# Paramètres de type : préfixe T + PascalCase  (TEntity, TResult…)
+dotnet_naming_rule.type_parameters_start_with_t.severity = warning
+dotnet_naming_rule.type_parameters_start_with_t.symbols  = type_parameters
+dotnet_naming_rule.type_parameters_start_with_t.style    = type_parameter_style
+dotnet_naming_symbols.type_parameters.applicable_kinds   = type_parameter
+dotnet_naming_style.type_parameter_style.required_prefix = T
+dotnet_naming_style.type_parameter_style.capitalization  = pascal_case
+
+# Champs static readonly / const : PascalCase  (CacheDuration, DefaultName…)
+dotnet_naming_rule.static_readonly_pascal.severity          = warning
+dotnet_naming_rule.static_readonly_pascal.symbols           = static_readonly_or_const
+dotnet_naming_rule.static_readonly_pascal.style             = pascal_case_style
+dotnet_naming_symbols.static_readonly_or_const.applicable_kinds        = field
+dotnet_naming_symbols.static_readonly_or_const.required_modifiers      = static, readonly
+dotnet_naming_style.pascal_case_style.capitalization                   = pascal_case
+
+dotnet_naming_rule.constants_pascal.severity          = warning
+dotnet_naming_rule.constants_pascal.symbols           = constants
+dotnet_naming_rule.constants_pascal.style             = pascal_case_style
+dotnet_naming_symbols.constants.applicable_kinds      = field
+dotnet_naming_symbols.constants.required_modifiers    = const
+
+# Champs privés d'instance : _camelCase  (_fileReader, _logger, _lock…)
+dotnet_naming_rule.private_fields_underscore_camel.severity = warning
+dotnet_naming_rule.private_fields_underscore_camel.symbols  = private_instance_fields
+dotnet_naming_rule.private_fields_underscore_camel.style    = underscore_camel_style
+dotnet_naming_symbols.private_instance_fields.applicable_kinds          = field
+dotnet_naming_symbols.private_instance_fields.applicable_accessibilities = private, protected, private_protected
+dotnet_naming_style.underscore_camel_style.required_prefix  = _
+dotnet_naming_style.underscore_camel_style.capitalization   = camel_case
+
+# Tous les autres membres : PascalCase
+dotnet_naming_rule.members_pascal.severity = warning
+dotnet_naming_rule.members_pascal.symbols  = all_other_members
+dotnet_naming_rule.members_pascal.style    = pascal_case_style
+dotnet_naming_symbols.all_other_members.applicable_kinds          = method, property, event, delegate, class, struct, enum, namespace
+dotnet_naming_symbols.all_other_members.applicable_accessibilities = *
+
+# Méthodes async : suffixe Async
+dotnet_naming_rule.async_methods_end_in_async.severity = suggestion
+dotnet_naming_rule.async_methods_end_in_async.symbols  = async_methods
+dotnet_naming_rule.async_methods_end_in_async.style    = async_suffix_style
+dotnet_naming_symbols.async_methods.applicable_kinds      = method
+dotnet_naming_symbols.async_methods.required_modifiers    = async
+dotnet_naming_style.async_suffix_style.required_suffix    = Async
+dotnet_naming_style.async_suffix_style.capitalization     = pascal_case
+
+# ────────────────────────────────────────────────────────────────────────────
+# Diagnostics — complètent AnalysisLevel=latest-recommended
+# (TreatWarningsAsErrors=true dans Directory.Build.props élève tous les
+#  warnings restants en erreurs au build)
+# ────────────────────────────────────────────────────────────────────────────
+
+# Performance : utiliser [LoggerMessage] plutôt que Log*()  — confirmé error
+dotnet_diagnostic.CA1848.severity = error
+
+# Nommage : pas d'underscore dans les identificateurs  — confirmé error
+dotnet_diagnostic.CA1707.severity = error
+
+# Style : utiliser les namespaces file-scoped
+# suggestion = affiché dans l'IDE mais ne casse pas le build (TreatWarningsAsErrors
+# n'élève que les "warning", pas les "suggestion")
+dotnet_diagnostic.IDE0161.severity = suggestion
+
+# Style : retirer les usings inutiles
+dotnet_diagnostic.IDE0005.severity = suggestion
+
+# IDE0055 (formatage) intentionnellement non défini ici : la valeur par défaut
+# Roslyn est "suggestion". L'activer en "warning" casserait l'alignement en colonnes
+# intentionnel dans NavigationTags.cs et PageRouter.cs.
+
+# Design : ne pas déclarer de champs d'instance visibles (utiliser des propriétés)
+dotnet_diagnostic.CA1051.severity = warning
+
+# Design : seal les classes qui ne sont pas destinées à être héritées
+dotnet_diagnostic.CA1852.severity = suggestion
+
+# Fiabilité : disposer les objets avant de perdre la portée
+dotnet_diagnostic.CA2000.severity = warning
+
+# Sécurité : pas de requêtes SQL construites depuis une entrée extérieure
+dotnet_diagnostic.CA2100.severity = error
+
+# Performance : préférer les lambdas static quand aucune capture n'est nécessaire
+dotnet_diagnostic.CA1851.severity = suggestion
+
+# Performance : ne pas appeler ToList/ToArray inutilement
+dotnet_diagnostic.CA1860.severity = suggestion
+
+# ────────────────────────────────────────────────────────────────────────────
+# Migrations EF Core — relâcher les règles sur le code généré
+# ────────────────────────────────────────────────────────────────────────────
 [**/Migrations/*.cs]
 dotnet_diagnostic.CA1861.severity = none
+dotnet_diagnostic.IDE0055.severity = none
+dotnet_diagnostic.IDE0161.severity = none
+
+# ────────────────────────────────────────────────────────────────────────────
+# Fichiers XML / MSBuild
+# ────────────────────────────────────────────────────────────────────────────
+[*.{csproj,props,targets,xml,config}]
+indent_size = 2
+
+# ────────────────────────────────────────────────────────────────────────────
+# JSON (fixtures, appsettings, manifests)
+# ────────────────────────────────────────────────────────────────────────────
+[*.json]
+indent_size = 2
+
+# ────────────────────────────────────────────────────────────────────────────
+# YAML (CI, GitHub Actions)
+# ────────────────────────────────────────────────────────────────────────────
+[*.{yml,yaml}]
+indent_size = 2

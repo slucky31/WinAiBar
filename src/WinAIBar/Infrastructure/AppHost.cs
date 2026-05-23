@@ -12,6 +12,7 @@ using System.Net;
 using System.Reflection;
 using WinAIBar.Core.Data;
 using WinAIBar.Core.Data.Abstractions;
+using WinAIBar.Core.Services.Anthropic;
 using WinAIBar.Core.Services.Navigation;
 using WinAIBar.Core.ViewModels;
 using WinAIBar.Services.Navigation;
@@ -65,6 +66,9 @@ public static partial class AppHost
         var logger = host.Services.GetRequiredService<ILogger<HostMarker>>();
         var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0";
         LogStarted(logger, version);
+
+        var credentialProvider = host.Services.GetRequiredService<IAnthropicCredentialProvider>();
+        await credentialProvider.GetAsync().ConfigureAwait(false);
     }
 
     public static async Task StopAsync()
@@ -119,6 +123,11 @@ public static partial class AppHost
             options.UseSqlite($"Data Source={Path.Combine(paths.DataDirectory, "history.db")}");
         });
         services.AddScoped<IHistoryRepository, HistoryRepository>();
+
+        services.AddSingleton<IAnthropicCredentialProvider>(sp =>
+            new AnthropicCredentialProvider(
+                path => File.Exists(path) ? File.ReadAllText(path) : null,
+                sp.GetRequiredService<ILogger<AnthropicCredentialProvider>>()));
 
         services.AddHttpClient(Options.DefaultName)
             .AddResilienceHandler("default", ConfigureHttpResiliencePolicy);
