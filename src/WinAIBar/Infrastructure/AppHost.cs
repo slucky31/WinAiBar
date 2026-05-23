@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -9,6 +10,8 @@ using Serilog;
 using System.Globalization;
 using System.Net;
 using System.Reflection;
+using WinAIBar.Core.Data;
+using WinAIBar.Core.Data.Abstractions;
 using WinAIBar.Core.Services.Navigation;
 using WinAIBar.Core.ViewModels;
 using WinAIBar.Services.Navigation;
@@ -44,6 +47,12 @@ public static partial class AppHost
         var host = builder.Build();
         await host.StartAsync().ConfigureAwait(false);
         _current = host;
+
+        using (var scope = host.Services.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<WinAIBarDbContext>();
+            await dbContext.Database.MigrateAsync().ConfigureAwait(false);
+        }
 
         var logger = host.Services.GetRequiredService<ILogger<HostMarker>>();
         if (logger.IsEnabled(LogLevel.Information))
@@ -98,6 +107,13 @@ public static partial class AppHost
         services.AddTransient<ShellViewModel>();
         services.AddTransient<Shell>();
         services.AddTransient<MainWindow>();
+
+        services.AddDbContext<WinAIBarDbContext>((sp, options) =>
+        {
+            var paths = sp.GetRequiredService<IPathProvider>();
+            options.UseSqlite($"Data Source={Path.Combine(paths.DataDirectory, "history.db")}");
+        });
+        services.AddScoped<IHistoryRepository, HistoryRepository>();
 
         services.AddHttpClient(Options.DefaultName)
             .AddResilienceHandler("default", static builder =>
