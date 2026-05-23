@@ -9,7 +9,16 @@
       "mcp__github__get_pull_request_comments",
       "mcp__github__get_pull_request_reviews",
       "Bash(git checkout *)",
-      "Bash(git pull *)"
+      "Bash(git pull *)",
+      "Bash(git push *)",
+      "Bash(git fetch *)",
+      "Bash(git branch *)",
+      "Bash(Get-ChildItem *)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Sort-Object)",
+      "Bash(dotnet ef *)",
+      "PowerShell(Get-WinEvent -LogName Application -MaxEvents 20 | Where-Object { $_.LevelDisplayName -in @\\('Error','Critical'\\) -and $_.TimeCreated -gt \\(Get-Date\\).Date } | Select-Object TimeCreated, LevelDisplayName, Message | Format-List)",
+      "PowerShell(Get-Content *)"
     ]
   }
 }

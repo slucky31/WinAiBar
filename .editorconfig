@@ -104,7 +104,9 @@ csharp_preserve_single_line_blocks     = true
 csharp_preferred_modifier_order = public,private,protected,internal,file,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,required,volatile,async:suggestion
 
 # ── Modificateurs d'accessibilité ────────────────────────────────────────────
-dotnet_style_require_accessibility_modifiers = always:warning
+# for_non_interface_members : les membres d'interface sont implicitement public
+# en C# — ne pas imposer le mot-clé (convention normale + différences Roslyn CI/local)
+dotnet_style_require_accessibility_modifiers = for_non_interface_members:warning
 
 # ── this. qualification ──────────────────────────────────────────────────────
 # Aucun fichier n'utilise this. pour accéder aux membres
