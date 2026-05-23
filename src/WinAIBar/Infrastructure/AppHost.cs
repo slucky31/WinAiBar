@@ -14,6 +14,7 @@ using WinAIBar.Core.Data;
 using WinAIBar.Core.Data.Abstractions;
 using WinAIBar.Core.Infrastructure;
 using WinAIBar.Core.Services.Anthropic;
+using WinAIBar.Core.Services.GitHub;
 using WinAIBar.Core.Services.Navigation;
 using WinAIBar.Core.ViewModels;
 using WinAIBar.Services.Navigation;
@@ -151,6 +152,12 @@ public static partial class AppHost
             .AddResilienceHandler("default", ConfigureHttpResiliencePolicy);
 
         var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0";
+        services.AddSingleton(new GitHubOAuthOptions());
+        services.AddHttpClient<IGitHubDeviceCodeAuthenticator, GitHubDeviceCodeAuthenticator>(client =>
+        {
+            client.DefaultRequestHeaders.UserAgent.ParseAdd($"WinAIBar/{version}");
+        });
+
         services.AddHttpClient<IAnthropicUsageClient, AnthropicUsageClient>(client =>
         {
             client.BaseAddress = new Uri("https://api.anthropic.com");
