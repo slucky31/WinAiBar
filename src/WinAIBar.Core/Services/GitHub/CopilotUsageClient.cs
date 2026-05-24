@@ -64,17 +64,30 @@ public sealed partial class CopilotUsageClient : ICopilotUsageClient
             var internalDto = ParseCopilotInternalResponse(internalJson);
             var quotas = new List<UsageQuota>();
 
+            if (internalDto.Quotas is not null)
+            {
+                foreach (var (key, utilization) in internalDto.Quotas)
+                    quotas.Add(new UsageQuota(key, key, utilization, null, null, null, null, null));
+            }
+
+            string? premiumJson = null;
             if (internalDto.Login is not null)
             {
-                var premiumQuotas = await FetchPremiumUsageAsync(internalDto.Login, token, ct).ConfigureAwait(false);
+                List<UsageQuota> premiumQuotas;
+                (premiumQuotas, premiumJson) = await FetchPremiumUsageAsync(internalDto.Login, token, ct).ConfigureAwait(false);
                 quotas.AddRange(premiumQuotas);
             }
 
-            return new ProviderSnapshot(ProviderId.Copilot, DateTimeOffset.UtcNow, quotas, internalJson);
+            // Combined payload so RawPayload corresponds to all quotas in the snapshot
+            var rawPayload = premiumJson is not null
+                ? $"{{\"internal\":{internalJson},\"premium\":{premiumJson}}}"
+                : internalJson;
+
+            return new ProviderSnapshot(ProviderId.Copilot, DateTimeOffset.UtcNow, quotas, rawPayload);
         }
     }
 
-    private async Task<IReadOnlyList<UsageQuota>> FetchPremiumUsageAsync(string login, string token, CancellationToken ct)
+    private async Task<(List<UsageQuota> Quotas, string? Json)> FetchPremiumUsageAsync(string login, string token, CancellationToken ct)
     {
         var endpoint = $"/users/{login}/settings/billing/premium_request/usage";
         using var request = new HttpRequestMessage(HttpMethod.Get, endpoint);
@@ -88,7 +101,7 @@ public sealed partial class CopilotUsageClient : ICopilotUsageClient
         catch (HttpRequestException ex)
         {
             LogRequestFailed(_logger, ex);
-            return [];
+            return ([], null);
         }
 
         using (response)
@@ -96,12 +109,13 @@ public sealed partial class CopilotUsageClient : ICopilotUsageClient
             if (!response.IsSuccessStatusCode)
             {
                 LogPremiumUsageSkipped(_logger, (int)response.StatusCode);
-                return [];
+                return ([], null);
             }
 
             var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
             LogPremiumFetchSuccess(_logger, json.Length);
-            return ParsePremiumUsageResponse(json);
+            var dto = ParsePremiumUsageResponse(json);
+            return (MapToUsageQuotas(dto), json);
         }
     }
 
@@ -110,7 +124,9 @@ public sealed partial class CopilotUsageClient : ICopilotUsageClient
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
 
-        string? login = root.TryGetProperty("login", out var loginEl) ? loginEl.GetString() : null;
+        string? login = root.TryGetProperty("login", out var loginEl) && loginEl.ValueKind == JsonValueKind.String
+            ? loginEl.GetString()
+            : null;
 
         int? chatEnabled = null;
         if (root.TryGetProperty("chat_enabled", out var chatEl) && chatEl.TryGetInt32(out var chatVal))
@@ -141,43 +157,60 @@ public sealed partial class CopilotUsageClient : ICopilotUsageClient
         };
     }
 
-    private static List<UsageQuota> ParsePremiumUsageResponse(string json)
+    private static CopilotPremiumUsageResponse ParsePremiumUsageResponse(string json)
     {
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
-        var quotas = new List<UsageQuota>();
+        var items = new List<CopilotPremiumUsageItem>();
 
-        if (!root.TryGetProperty("usageItems", out var itemsEl) || itemsEl.ValueKind != JsonValueKind.Array)
-            return quotas;
-
-        foreach (var item in itemsEl.EnumerateArray())
+        if (root.TryGetProperty("usageItems", out var itemsEl) && itemsEl.ValueKind == JsonValueKind.Array)
         {
-            string key = item.TryGetProperty("key", out var keyEl) ? keyEl.GetString() ?? "unknown" : "unknown";
-            string label = item.TryGetProperty("label", out var labelEl) ? labelEl.GetString() ?? key : key;
+            foreach (var item in itemsEl.EnumerateArray())
+            {
+                string key = item.TryGetProperty("key", out var keyEl) && keyEl.ValueKind == JsonValueKind.String
+                    ? keyEl.GetString() ?? "unknown" : "unknown";
+                string label = item.TryGetProperty("label", out var labelEl) && labelEl.ValueKind == JsonValueKind.String
+                    ? labelEl.GetString() ?? key : key;
 
-            double utilization = 0;
-            if (item.TryGetProperty("utilization", out var utilizEl) && utilizEl.TryGetDouble(out var u))
-                utilization = u;
+                double utilization = 0;
+                if (item.TryGetProperty("utilization", out var utilizEl) && utilizEl.TryGetDouble(out var u))
+                    utilization = u;
 
-            DateTimeOffset? resetsAt = null;
-            if (item.TryGetProperty("resets_at", out var resetsEl) && resetsEl.ValueKind == JsonValueKind.String)
-                resetsAt = resetsEl.TryGetDateTimeOffset(out var dt) ? dt : null;
+                DateTimeOffset? resetsAt = null;
+                if (item.TryGetProperty("resets_at", out var resetsEl) && resetsEl.ValueKind == JsonValueKind.String)
+                    resetsAt = resetsEl.TryGetDateTimeOffset(out var dt) ? dt : null;
 
-            long? used = null;
-            if (item.TryGetProperty("used", out var usedEl) && usedEl.TryGetInt64(out var usedVal))
-                used = usedVal;
+                long? used = null;
+                if (item.TryGetProperty("used", out var usedEl) && usedEl.TryGetInt64(out var usedVal))
+                    used = usedVal;
 
-            long? limit = null;
-            if (item.TryGetProperty("limit", out var limitEl) && limitEl.TryGetInt64(out var limitVal))
-                limit = limitVal;
+                long? limit = null;
+                if (item.TryGetProperty("limit", out var limitEl) && limitEl.TryGetInt64(out var limitVal))
+                    limit = limitVal;
 
-            string? unit = item.TryGetProperty("unit", out var unitEl) ? unitEl.GetString() : null;
+                string? unit = item.TryGetProperty("unit", out var unitEl) && unitEl.ValueKind == JsonValueKind.String
+                    ? unitEl.GetString() : null;
 
-            quotas.Add(new UsageQuota(key, label, utilization, resetsAt, used, limit, unit, null));
+                items.Add(new CopilotPremiumUsageItem
+                {
+                    Key = key,
+                    Label = label,
+                    Utilization = utilization,
+                    ResetsAt = resetsAt,
+                    Used = used,
+                    Limit = limit,
+                    Unit = unit
+                });
+            }
         }
 
-        return quotas;
+        return new CopilotPremiumUsageResponse { UsageItems = items, RawData = root.Clone() };
     }
+
+    private static List<UsageQuota> MapToUsageQuotas(CopilotPremiumUsageResponse dto) =>
+        dto.UsageItems
+            .Select(i => new UsageQuota(i.Key ?? "unknown", i.Label ?? i.Key ?? "unknown", i.Utilization, i.ResetsAt, i.Used, i.Limit, i.Unit, null))
+            .ToList();
 
     private static ProviderSnapshot CreateEndpointMissingSnapshot()
     {
