@@ -169,6 +169,15 @@ public static partial class AppHost
             client.DefaultRequestHeaders.UserAgent.ParseAdd($"WinAIBar/{version}");
         })
         .AddResilienceHandler("anthropic", ConfigureHttpResiliencePolicy);
+
+        services.AddHttpClient<ICopilotUsageClient, CopilotUsageClient>(client =>
+        {
+            client.BaseAddress = new Uri("https://api.github.com");
+            client.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
+            client.DefaultRequestHeaders.Add("X-GitHub-Api-Version", "2025-05-01");
+            client.DefaultRequestHeaders.UserAgent.ParseAdd($"WinAIBar/{version}");
+        })
+        .AddResilienceHandler("copilot", ConfigureHttpResiliencePolicy);
     }
 
     private static void ConfigureHttpResiliencePolicy(ResiliencePipelineBuilder<HttpResponseMessage> builder)
