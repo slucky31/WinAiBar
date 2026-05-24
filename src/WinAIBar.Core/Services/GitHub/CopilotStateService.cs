@@ -1,5 +1,5 @@
+using WinAIBar.Core.Infrastructure;
 using WinAIBar.Core.Models;
-using WinAIBar.Core.Services.Anthropic;
 
 namespace WinAIBar.Core.Services.GitHub;
 

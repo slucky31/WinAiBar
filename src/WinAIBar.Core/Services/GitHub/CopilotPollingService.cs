@@ -89,10 +89,14 @@ public sealed partial class CopilotPollingService : BackgroundService
             catch (CopilotUnauthorizedException)
             {
                 consecutiveErrors++;
+                var now = _timeProvider.GetUtcNow();
+                var snapshot = new ProviderSnapshot(ProviderId.Copilot, now, [], null);
                 var health = new ProviderHealth(
                     ProviderId.Copilot, ProviderStatus.Unauthorized,
-                    _timeProvider.GetUtcNow(), 401, "Unauthorized", null);
+                    now, 401, "Unauthorized", null);
+                _stateService.UpdateSnapshot(snapshot);
                 _stateService.UpdateHealth(health);
+                WeakReferenceMessenger.Default.Send(snapshot);
                 LogUnauthorized(_logger);
                 await Task.Delay(UnauthorizedWait, _timeProvider, stoppingToken).ConfigureAwait(false);
             }
