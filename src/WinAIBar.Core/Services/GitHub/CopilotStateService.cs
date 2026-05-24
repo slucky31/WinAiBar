@@ -1,9 +1,9 @@
 using WinAIBar.Core.Infrastructure;
 using WinAIBar.Core.Models;
 
-namespace WinAIBar.Core.Services.Anthropic;
+namespace WinAIBar.Core.Services.GitHub;
 
-public sealed class ClaudeStateService : IClaudeStateService, IDisposable
+public sealed class CopilotStateService : ICopilotStateService, IDisposable
 {
     private volatile ProviderSnapshot? _latestSnapshot;
     private volatile ProviderHealth? _latestHealth;
