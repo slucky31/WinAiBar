@@ -1,0 +1,22 @@
+{
+  "usageItems": [
+    {
+      "key": "premium-requests",
+      "label": "Premium requests",
+      "used": 45,
+      "limit": 300,
+      "unit": "requests",
+      "resets_at": "2026-06-01T00:00:00Z",
+      "utilization": 0.15
+    },
+    {
+      "key": "credits",
+      "label": "Credits",
+      "used": 250,
+      "limit": 5000,
+      "unit": "credits",
+      "resets_at": "2026-06-01T00:00:00Z",
+      "utilization": 0.05
+    }
+  ]
+}
