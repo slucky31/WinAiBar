@@ -147,6 +147,8 @@ public static partial class AppHost
         services.AddSingleton<IIdleDetector, IdleDetector>();
         services.AddSingleton<IClaudeStateService, ClaudeStateService>();
         services.AddHostedService<ClaudePollingService>();
+        services.AddSingleton<ICopilotStateService, CopilotStateService>();
+        services.AddHostedService<CopilotPollingService>();
 
         services.AddHttpClient(Options.DefaultName)
             .AddResilienceHandler("default", ConfigureHttpResiliencePolicy);
