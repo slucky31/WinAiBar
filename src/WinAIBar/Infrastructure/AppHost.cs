@@ -19,7 +19,9 @@ using WinAIBar.Core.Services.Navigation;
 using WinAIBar.Core.ViewModels;
 using WinAIBar.Services.Navigation;
 using WinAIBar.Services.Tray;
+using WinAIBar.ViewModels;
 using WinAIBar.Views;
+using WinAIBar.Views.Flyouts;
 
 namespace WinAIBar.Infrastructure;
 
@@ -146,6 +148,8 @@ public static partial class AppHost
                 sp.GetRequiredService<ILogger<AnthropicCredentialProvider>>()));
 
         services.AddSingleton<ITrayIconRenderer, TrayIconRenderer>();
+        services.AddSingleton<TrayFlyoutViewModel>();
+        services.AddSingleton<TrayFlyout>();
         services.AddSingleton<TrayController>();
 
         services.AddSingleton<IIdleDetector, IdleDetector>();

@@ -267,6 +267,11 @@ dotnet_diagnostic.CA1851.severity = suggestion
 # Performance : ne pas appeler ToList/ToArray inutilement
 dotnet_diagnostic.CA1860.severity = suggestion
 
+# MVVMTK0045 : partial-property AOT pattern; field-based approach retained
+# because CsWinRT source generator for partial properties is not yet stable
+# with CommunityToolkit.Mvvm 8.4.0 in this project configuration.
+dotnet_diagnostic.MVVMTK0045.severity = none
+
 # ────────────────────────────────────────────────────────────────────────────
 # Migrations EF Core — relâcher les règles sur le code généré
 # ────────────────────────────────────────────────────────────────────────────

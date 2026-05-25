@@ -8,6 +8,7 @@ using System.Drawing;
 using System.Runtime.Versioning;
 using WinAIBar;
 using WinAIBar.Core.Models;
+using WinAIBar.Views.Flyouts;
 
 namespace WinAIBar.Services.Tray;
 
@@ -16,6 +17,7 @@ public sealed partial class TrayController : IDisposable
 {
     private readonly ITrayIconRenderer _renderer;
     private readonly MainWindow _mainWindow;
+    private readonly TrayFlyout _flyout;
     private readonly ILogger<TrayController> _logger;
 
     private TaskbarIcon? _trayIcon;
@@ -29,10 +31,12 @@ public sealed partial class TrayController : IDisposable
     public TrayController(
         ITrayIconRenderer renderer,
         MainWindow mainWindow,
+        TrayFlyout flyout,
         ILogger<TrayController> logger)
     {
         _renderer = renderer;
         _mainWindow = mainWindow;
+        _flyout = flyout;
         _logger = logger;
     }
 
@@ -49,7 +53,7 @@ public sealed partial class TrayController : IDisposable
         };
         _trayIcon.ContextMenuMode = ContextMenuMode.SecondWindow;
         _trayIcon.ContextFlyout = BuildContextMenu();
-        _trayIcon.LeftClickCommand = new RelayCommand(ShowMainWindow);
+        _trayIcon.LeftClickCommand = new RelayCommand(ShowTrayFlyout);
         _trayIcon.ForceCreate(true);
 
         WeakReferenceMessenger.Default.Register<ProviderSnapshot>(this, (_, msg) =>
@@ -150,6 +154,9 @@ public sealed partial class TrayController : IDisposable
         span.TotalHours >= 1
             ? $"{(int)span.TotalHours}h {span.Minutes:D2}m"
             : $"{span.Minutes}m";
+
+    private void ShowTrayFlyout() =>
+        _dispatcher?.TryEnqueue(_flyout.ShowAtTaskbar);
 
     private void ShowMainWindow() =>
         _dispatcher?.TryEnqueue(_mainWindow.Activate);
