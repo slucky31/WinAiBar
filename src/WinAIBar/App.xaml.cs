@@ -27,7 +27,9 @@ public partial class App : Application
             var trayController = AppHost.Current.Services.GetRequiredService<TrayController>();
             trayController.Start();
 
+#if DEBUG
             InjectDebugFakeQuota();
+#endif
 
             _mainWindow = AppHost.Current.Services.GetRequiredService<MainWindow>();
             _mainWindow.Activate();
@@ -40,6 +42,7 @@ public partial class App : Application
         }
     }
 
+#if DEBUG
     private static void InjectDebugFakeQuota()
     {
         var cmdArgs = Environment.GetCommandLineArgs();
@@ -62,6 +65,7 @@ public partial class App : Application
             null);
         WeakReferenceMessenger.Default.Send(snapshot);
     }
+#endif
 
     private static void OnWinUIUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
     {

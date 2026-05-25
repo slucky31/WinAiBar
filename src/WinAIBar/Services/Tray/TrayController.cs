@@ -3,15 +3,15 @@ using CommunityToolkit.Mvvm.Messaging;
 using H.NotifyIcon;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System.Drawing;
 using System.Runtime.Versioning;
+using WinAIBar;
 using WinAIBar.Core.Models;
 
 namespace WinAIBar.Services.Tray;
 
-[SupportedOSPlatform("windows5.1.2600")]
+[SupportedOSPlatform("windows10.0.17763.0")]
 public sealed partial class TrayController : IDisposable
 {
     private readonly ITrayIconRenderer _renderer;
@@ -68,13 +68,14 @@ public sealed partial class TrayController : IDisposable
         var openItem = new MenuFlyoutItem { Text = "Open dashboard" };
         openItem.Click += (_, _) => ShowMainWindow();
 
-        var refreshItem = new MenuFlyoutItem { Text = "Refresh now" };
+        // will be wired to polling services in a future prompt
+        var refreshItem = new MenuFlyoutItem { Text = "Refresh now", IsEnabled = false };
 
         var settingsItem = new MenuFlyoutItem { Text = "Settings" };
         settingsItem.Click += (_, _) => ShowMainWindow();
 
         var exitItem = new MenuFlyoutItem { Text = "Exit" };
-        exitItem.Click += (_, _) => Application.Current.Exit();
+        exitItem.Click += (_, _) => _dispatcher?.TryEnqueue(_mainWindow.Close);
 
         var menu = new MenuFlyout();
         menu.Items.Add(openItem);
@@ -156,10 +157,14 @@ public sealed partial class TrayController : IDisposable
     public void Dispose()
     {
         WeakReferenceMessenger.Default.UnregisterAll(this);
-        _trayIcon?.Dispose();
-        _trayIcon = null;
-        _currentIcon?.Dispose();
-        _currentIcon = null;
+        // TaskbarIcon is a UI object — dispose on the UI thread
+        _dispatcher?.TryEnqueue(() =>
+        {
+            _trayIcon?.Dispose();
+            _trayIcon = null;
+            _currentIcon?.Dispose();
+            _currentIcon = null;
+        });
     }
 
     [LoggerMessage(EventId = 100, Level = LogLevel.Information, Message = "TrayController started")]

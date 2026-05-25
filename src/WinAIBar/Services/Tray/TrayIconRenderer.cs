@@ -7,7 +7,7 @@ using System.Runtime.Versioning;
 
 namespace WinAIBar.Services.Tray;
 
-[SupportedOSPlatform("windows5.1.2600")]
+[SupportedOSPlatform("windows10.0.17763.0")]
 public sealed class TrayIconRenderer : ITrayIconRenderer
 {
     private const int Size = 32;
