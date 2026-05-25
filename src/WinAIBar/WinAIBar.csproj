@@ -29,6 +29,7 @@
     <PackageReference Include="Polly" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="H.NotifyIcon.WinUI" />
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.WinUI" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WinAIBar.Core\WinAIBar.Core.csproj" />

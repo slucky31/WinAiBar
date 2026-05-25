@@ -60,7 +60,7 @@
                     <!-- Major quotas: 3 UsageGauges -->
                     <ItemsRepeater ItemsSource="{x:Bind ViewModel.ClaudeMajorQuotas, Mode=OneWay}">
                         <ItemsRepeater.Layout>
-                            <UniformGridLayout MinItemWidth="110" MinColumnSpacing="8"
+                            <UniformGridLayout MinItemWidth="180" MinColumnSpacing="8"
                                                MinRowSpacing="8" ItemsStretch="Fill" />
                         </ItemsRepeater.Layout>
                         <ItemsRepeater.ItemTemplate>
@@ -104,7 +104,7 @@
                     <!-- Major quotas: 2 UsageGauges -->
                     <ItemsRepeater ItemsSource="{x:Bind ViewModel.CopilotMajorQuotas, Mode=OneWay}">
                         <ItemsRepeater.Layout>
-                            <UniformGridLayout MinItemWidth="110" MinColumnSpacing="8"
+                            <UniformGridLayout MinItemWidth="180" MinColumnSpacing="8"
                                                MinRowSpacing="8" ItemsStretch="Fill" />
                         </ItemsRepeater.Layout>
                         <ItemsRepeater.ItemTemplate>

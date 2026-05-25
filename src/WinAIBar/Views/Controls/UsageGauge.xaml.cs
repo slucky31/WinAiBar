@@ -1,6 +1,11 @@
+using LiveChartsCore;
+using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore.SkiaSharpView.Painting;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using SkiaSharp;
 using WinAIBar.Core.Infrastructure;
+using WinAIBar.UI;
 
 namespace WinAIBar.Views.Controls;
 
@@ -12,7 +17,7 @@ public sealed partial class UsageGauge : UserControl
 
     public static readonly DependencyProperty LabelProperty =
         DependencyProperty.Register(nameof(Label), typeof(string), typeof(UsageGauge),
-            new PropertyMetadata(string.Empty, (d, e) => ((UsageGauge)d).LabelText.Text = (string)e.NewValue));
+            new PropertyMetadata(string.Empty, (d, e) => ((UsageGauge)d).OnLabelChanged((string)e.NewValue)));
 
     public static readonly DependencyProperty ResetsAtProperty =
         DependencyProperty.Register(nameof(ResetsAt), typeof(DateTimeOffset), typeof(UsageGauge),
@@ -50,13 +55,44 @@ public sealed partial class UsageGauge : UserControl
         set => SetValue(SubtitleProperty, value);
     }
 
-    public UsageGauge() => InitializeComponent();
+    private readonly PieSeries<double> _valueSeries;
+    private readonly PieSeries<double> _remainderSeries;
+
+    public UsageGauge()
+    {
+        InitializeComponent();
+
+        var (r0, g0, b0) = UtilizationColors.GetRgb(0.0);
+        _valueSeries = new PieSeries<double>
+        {
+            Values = [0.0],
+            InnerRadius = 60,
+            Fill = new SolidColorPaint(new SKColor(r0, g0, b0)),
+        };
+
+        _remainderSeries = new PieSeries<double>
+        {
+            Values = [1.0],
+            InnerRadius = 60,
+            Fill = new SolidColorPaint(new SKColor(211, 211, 211, 77)),
+        };
+
+        GaugeChart.Series = new ISeries[] { _valueSeries, _remainderSeries };
+        GaugeChart.TooltipPosition = LiveChartsCore.Measure.TooltipPosition.Hidden;
+        GaugeChart.LegendPosition = LiveChartsCore.Measure.LegendPosition.Hidden;
+    }
 
     private void OnValueChanged(double value)
     {
-        Ring.Value = Math.Clamp(value, 0.0, 1.0);
         PercentText.Text = $"{value:P0}";
-        UpdateResetText();
+        UpdateSeries(value);
+        UpdateAutomationName();
+    }
+
+    private void OnLabelChanged(string value)
+    {
+        LabelText.Text = value;
+        UpdateAutomationName();
     }
 
     private void OnSubtitleChanged(string? value)
@@ -70,5 +106,24 @@ public sealed partial class UsageGauge : UserControl
         var text = TimeFormatHelper.FormatReset(ResetsAt);
         ResetTextBlock.Text = text;
         ResetTextBlock.Visibility = string.IsNullOrEmpty(text) ? Visibility.Collapsed : Visibility.Visible;
+        UpdateAutomationName();
+    }
+
+    private void UpdateSeries(double value)
+    {
+        var clamped = Math.Clamp(value, 0.0, 1.0);
+        var (r, g, b) = UtilizationColors.GetRgb(value);
+        _valueSeries.Values = [clamped];
+        _valueSeries.Fill = new SolidColorPaint(new SKColor(r, g, b));
+        _remainderSeries.Values = [Math.Max(0.0, 1.0 - clamped)];
+    }
+
+    private void UpdateAutomationName()
+    {
+        var resetText = TimeFormatHelper.FormatReset(ResetsAt);
+        var automationName = string.IsNullOrEmpty(resetText)
+            ? $"{Label}: {Value:P0}"
+            : $"{Label}: {Value:P0}, {resetText}";
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(this, automationName);
     }
 }
