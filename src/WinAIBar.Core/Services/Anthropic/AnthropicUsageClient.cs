@@ -93,7 +93,7 @@ public sealed partial class AnthropicUsageClient : IAnthropicUsageClient
         if (element.TryGetProperty("utilization", out var utilizationEl) &&
             utilizationEl.ValueKind == JsonValueKind.Number &&
             utilizationEl.TryGetDouble(out var u))
-            utilization = u;
+            utilization = u / 100.0;
 
         DateTimeOffset? resetsAt = null;
         if (element.TryGetProperty("resets_at", out var resetsAtEl))

@@ -35,6 +35,7 @@ public sealed partial class TrayFlyout : Window
     {
         _hasBeenActivated = false;
         PositionAtTaskbar();
+        AppWindow.Show();
         Activate();
     }
 

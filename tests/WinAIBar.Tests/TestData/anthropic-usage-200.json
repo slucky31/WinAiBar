@@ -1,7 +1,7 @@
 {
   "session-5h": {
     "label": "Session (5h)",
-    "utilization": 0.42,
+    "utilization": 42,
     "resets_at": "2026-05-23T18:00:00Z",
     "used": 210000,
     "limit": 500000,
@@ -9,7 +9,7 @@
   },
   "weekly-all": {
     "label": "Weekly (All models)",
-    "utilization": 0.15,
+    "utilization": 15,
     "resets_at": "2026-05-26T00:00:00Z",
     "used": 750000,
     "limit": 5000000,
