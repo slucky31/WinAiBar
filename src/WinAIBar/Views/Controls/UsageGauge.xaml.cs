@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using SkiaSharp;
 using WinAIBar.Core.Infrastructure;
+using WinAIBar.UI;
 
 namespace WinAIBar.Views.Controls;
 
@@ -61,11 +62,12 @@ public sealed partial class UsageGauge : UserControl
     {
         InitializeComponent();
 
+        var (r0, g0, b0) = UtilizationColors.GetRgb(0.0);
         _valueSeries = new PieSeries<double>
         {
             Values = [0.0],
             InnerRadius = 60,
-            Fill = new SolidColorPaint(GetColorForValue(0.0)),
+            Fill = new SolidColorPaint(new SKColor(r0, g0, b0)),
         };
 
         _remainderSeries = new PieSeries<double>
@@ -110,26 +112,18 @@ public sealed partial class UsageGauge : UserControl
     private void UpdateSeries(double value)
     {
         var clamped = Math.Clamp(value, 0.0, 1.0);
+        var (r, g, b) = UtilizationColors.GetRgb(value);
         _valueSeries.Values = [clamped];
-        _valueSeries.Fill = new SolidColorPaint(GetColorForValue(value));
+        _valueSeries.Fill = new SolidColorPaint(new SKColor(r, g, b));
         _remainderSeries.Values = [Math.Max(0.0, 1.0 - clamped)];
     }
-
-    private static SKColor GetColorForValue(double value) => value switch
-    {
-        < 0.50 => new SKColor(0x00, 0x78, 0xD4),
-        < 0.75 => new SKColor(0x10, 0x7C, 0x10),
-        < 0.90 => new SKColor(0xFF, 0xB9, 0x00),
-        < 1.00 => new SKColor(0xD1, 0x34, 0x38),
-        _ => new SKColor(0xA4, 0x26, 0x2C),
-    };
 
     private void UpdateAutomationName()
     {
         var resetText = TimeFormatHelper.FormatReset(ResetsAt);
         var automationName = string.IsNullOrEmpty(resetText)
             ? $"{Label}: {Value:P0}"
-            : $"{Label}: {Value:P0}, resets in {resetText}";
+            : $"{Label}: {Value:P0}, {resetText}";
         Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(this, automationName);
     }
 }

@@ -4,6 +4,7 @@ using System.Drawing.Imaging;
 using System.Drawing.Text;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using WinAIBar.UI;
 
 namespace WinAIBar.Services.Tray;
 
@@ -14,7 +15,8 @@ public sealed class TrayIconRenderer : ITrayIconRenderer
 
     public Icon Render(double maxUtilization)
     {
-        var fill = GetFillColor(maxUtilization);
+        var (cr, cg, cb) = UtilizationColors.GetRgb(maxUtilization);
+        var fill = Color.FromArgb(cr, cg, cb);
         var pct = (int)Math.Round(Math.Clamp(maxUtilization * 100.0, 0.0, 999.0));
         var text = $"{pct}%";
 
@@ -46,15 +48,6 @@ public sealed class TrayIconRenderer : ITrayIconRenderer
             DestroyIcon(hIcon);
         }
     }
-
-    private static Color GetFillColor(double u) => u switch
-    {
-        < 0.50 => Color.FromArgb(0x00, 0x78, 0xD4),
-        < 0.75 => Color.FromArgb(0x10, 0x7C, 0x10),
-        < 0.90 => Color.FromArgb(0xFF, 0xB9, 0x00),
-        < 1.00 => Color.FromArgb(0xD1, 0x34, 0x38),
-        _      => Color.FromArgb(0xA4, 0x26, 0x2C),
-    };
 
     [DllImport("user32.dll", ExactSpelling = true)]
     [return: MarshalAs(UnmanagedType.Bool)]

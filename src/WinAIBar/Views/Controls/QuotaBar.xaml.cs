@@ -1,6 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using WinAIBar.UI;
 
 namespace WinAIBar.Views.Controls;
 
@@ -41,7 +42,8 @@ public sealed partial class QuotaBar : UserControl
     private void OnValueChanged(double value)
     {
         Bar.Value = Math.Clamp(value, 0.0, 1.0);
-        Bar.Foreground = GetBrushForValue(value);
+        var (r, g, b) = UtilizationColors.GetRgb(value);
+        Bar.Foreground = new SolidColorBrush(Windows.UI.Color.FromArgb(0xFF, r, g, b));
         UpdateRightText();
     }
 
@@ -51,13 +53,4 @@ public sealed partial class QuotaBar : UserControl
         var reset = ResetText;
         RightText.Text = string.IsNullOrEmpty(reset) ? pct : $"{pct} · {reset}";
     }
-
-    private static SolidColorBrush GetBrushForValue(double v) => v switch
-    {
-        < 0.50 => new SolidColorBrush(Windows.UI.Color.FromArgb(0xFF, 0x00, 0x78, 0xD4)),
-        < 0.75 => new SolidColorBrush(Windows.UI.Color.FromArgb(0xFF, 0x10, 0x7C, 0x10)),
-        < 0.90 => new SolidColorBrush(Windows.UI.Color.FromArgb(0xFF, 0xFF, 0xB9, 0x00)),
-        < 1.00 => new SolidColorBrush(Windows.UI.Color.FromArgb(0xFF, 0xD1, 0x34, 0x38)),
-        _      => new SolidColorBrush(Windows.UI.Color.FromArgb(0xFF, 0xA4, 0x26, 0x2C)),
-    };
 }
