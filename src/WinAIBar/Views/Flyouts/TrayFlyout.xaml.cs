@@ -48,8 +48,25 @@ public sealed partial class TrayFlyout : Window
 
         var display = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Primary);
         var workArea = display.WorkArea;
-        int left = workArea.X + workArea.Width - widthPx;
-        int top = workArea.Y + workArea.Height - heightPx;
+        var outer = display.OuterBounds;
+
+        // Detect which edge the taskbar is on by comparing work area to outer bounds.
+        // The notification area is at the right end of a horizontal taskbar (top/bottom)
+        // and at the bottom of a vertical taskbar (left/right).
+        int left, top;
+        if (workArea.Y > outer.Y)
+        {
+            // Taskbar on top: anchor flyout to top-right of work area
+            left = workArea.X + workArea.Width - widthPx;
+            top = workArea.Y;
+        }
+        else
+        {
+            // Taskbar on bottom, left, or right: anchor to bottom-right of work area
+            left = workArea.X + workArea.Width - widthPx;
+            top = workArea.Y + workArea.Height - heightPx;
+        }
+
         AppWindow.Move(new PointInt32(left, top));
     }
 

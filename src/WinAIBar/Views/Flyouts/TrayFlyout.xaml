@@ -25,8 +25,8 @@
                 <TextBlock Text="WinAIBar" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
             </StackPanel>
             <Button Content="&#x2699;" HorizontalAlignment="Right"
-                    Command="{x:Bind ViewModel.OpenSettingsCommand}"
-                    ToolTipService.ToolTip="Open dashboard" />
+                    Command="{x:Bind ViewModel.OpenMainWindowCommand}"
+                    ToolTipService.ToolTip="Open WinAIBar" />
         </Grid>
 
         <!-- Claude section -->

@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using WinAIBar.Core.Infrastructure;
 using WinAIBar.Core.Models;
 using WinAIBar.Core.Services.Anthropic;
 using WinAIBar.Core.Services.GitHub;
@@ -70,7 +71,7 @@ public sealed partial class TrayFlyoutViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void OpenSettings() => _dispatcher.TryEnqueue(_mainWindow.Activate);
+    private void OpenMainWindow() => _dispatcher.TryEnqueue(_mainWindow.Activate);
 
     private void ApplyClaudeSnapshot(ProviderSnapshot snapshot)
     {
@@ -120,15 +121,6 @@ public sealed partial class TrayFlyoutViewModel : ObservableObject
         snapshot.Quotas.FirstOrDefault(q =>
             q.Key.Contains(keyPart, StringComparison.OrdinalIgnoreCase));
 
-    private static string FormatReset(DateTimeOffset? resetsAt)
-    {
-        if (resetsAt is null) return string.Empty;
-        var remaining = resetsAt.Value - DateTimeOffset.UtcNow;
-        if (remaining <= TimeSpan.Zero) return "expired";
-        return remaining.TotalDays >= 1
-            ? $"resets in {(int)remaining.TotalDays}d {remaining.Hours}h"
-            : remaining.TotalHours >= 1
-                ? $"resets in {(int)remaining.TotalHours}h {remaining.Minutes:D2}m"
-                : $"resets in {remaining.Minutes}m";
-    }
+    private static string FormatReset(DateTimeOffset? resetsAt) =>
+        TimeFormatHelper.FormatReset(resetsAt);
 }
