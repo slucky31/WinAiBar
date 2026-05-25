@@ -7,7 +7,7 @@
 
   À chaque étape, ouvre une session fraîche (ou /clear) dans le dossier C:\Users\Nicolas\source\repos\WinAIBar et envoie :
 
-  Lis le fichier PROMPTS.md à la racine du projet et exécute UNIQUEMENT le Prompt 13.
+  Lis le fichier PROMPTS.md à la racine du projet et exécute UNIQUEMENT le Prompt 14.
   - Ne regarde pas les prompts suivants.
   - Respecte strictement la convention de réponse listée en annexe du document.
   - Stoppe dès que les acceptance criteria sont remplis.

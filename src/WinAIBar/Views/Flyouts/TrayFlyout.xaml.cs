@@ -13,6 +13,8 @@ public sealed partial class TrayFlyout : Window
 {
     public TrayFlyoutViewModel ViewModel { get; }
 
+    private bool _hasBeenActivated;
+
     public TrayFlyout(TrayFlyoutViewModel viewModel)
     {
         ViewModel = viewModel;
@@ -31,6 +33,7 @@ public sealed partial class TrayFlyout : Window
 
     public void ShowAtTaskbar()
     {
+        _hasBeenActivated = false;
         PositionAtTaskbar();
         Activate();
     }
@@ -39,6 +42,7 @@ public sealed partial class TrayFlyout : Window
     {
         var hwnd = WindowNative.GetWindowHandle(this);
         uint dpi = GetDpiForWindow(hwnd);
+        if (dpi == 0) dpi = 96;
         double scale = dpi / 96.0;
 
         int widthPx = (int)(360 * scale);
@@ -72,8 +76,15 @@ public sealed partial class TrayFlyout : Window
 
     private void OnActivated(object sender, WindowActivatedEventArgs args)
     {
-        if (args.WindowActivationState == WindowActivationState.Deactivated)
+        if (args.WindowActivationState != WindowActivationState.Deactivated)
+        {
+            _hasBeenActivated = true;
+        }
+        else if (_hasBeenActivated)
+        {
+            _hasBeenActivated = false;
             AppWindow.Hide();
+        }
     }
 
     [DllImport("user32.dll", SetLastError = false)]
