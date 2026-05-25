@@ -15,8 +15,8 @@ public sealed partial class UsageGauge : UserControl
             new PropertyMetadata(string.Empty, (d, e) => ((UsageGauge)d).LabelText.Text = (string)e.NewValue));
 
     public static readonly DependencyProperty ResetsAtProperty =
-        DependencyProperty.Register(nameof(ResetsAt), typeof(object), typeof(UsageGauge),
-            new PropertyMetadata(null, (d, _) => ((UsageGauge)d).UpdateResetText()));
+        DependencyProperty.Register(nameof(ResetsAt), typeof(DateTimeOffset), typeof(UsageGauge),
+            new PropertyMetadata(default(DateTimeOffset), (d, _) => ((UsageGauge)d).UpdateResetText()));
 
     public static readonly DependencyProperty SubtitleProperty =
         DependencyProperty.Register(nameof(Subtitle), typeof(string), typeof(UsageGauge),
@@ -36,8 +36,12 @@ public sealed partial class UsageGauge : UserControl
 
     public DateTimeOffset? ResetsAt
     {
-        get => GetValue(ResetsAtProperty) is DateTimeOffset dt ? dt : null;
-        set => SetValue(ResetsAtProperty, value);
+        get
+        {
+            var dt = (DateTimeOffset)GetValue(ResetsAtProperty);
+            return dt == default(DateTimeOffset) ? null : dt;
+        }
+        set => SetValue(ResetsAtProperty, value ?? default(DateTimeOffset));
     }
 
     public string? Subtitle

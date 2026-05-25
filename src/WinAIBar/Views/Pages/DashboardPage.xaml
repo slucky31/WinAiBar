@@ -68,6 +68,7 @@
                                 <controls:UsageGauge
                                     Label="{x:Bind Label}"
                                     Value="{x:Bind Value}"
+                                    ResetsAt="{x:Bind ResetsAt}"
                                     Subtitle="{x:Bind Subtitle}" />
                             </DataTemplate>
                         </ItemsRepeater.ItemTemplate>
@@ -111,6 +112,7 @@
                                 <controls:UsageGauge
                                     Label="{x:Bind Label}"
                                     Value="{x:Bind Value}"
+                                    ResetsAt="{x:Bind ResetsAt}"
                                     Subtitle="{x:Bind Subtitle}" />
                             </DataTemplate>
                         </ItemsRepeater.ItemTemplate>

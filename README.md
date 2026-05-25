@@ -15,6 +15,8 @@ winget install SQLite.SQLite
 
 notepad $PROFILE
 
-$env:GITHUB_TOKEN = "ghp_<token>"
+$env:GITHUB_TOKEN = (Read-Host "GitHub token")
 $env:CLAUDE_CODE_USE_POWERSHELL_TOOL=1
 $env:ANTHROPIC_MODEL = "sonnet"
+
+ fix the comment review of the pr (use mcp)
