@@ -7,7 +7,7 @@
     <PackageVersion Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.1.240916" />
     <PackageVersion Include="CommunityToolkit.WinUI.Notifications" Version="7.1.2" />
     <PackageVersion Include="H.NotifyIcon.WinUI" Version="2.2.0" />
-    <PackageVersion Include="LiveChartsCore.SkiaSharpView.WinUI" Version="2.0.0-rc5.4" />
+    <PackageVersion Include="LiveChartsCore.SkiaSharpView.WinUI" Version="2.0.0-rc6" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.16" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.16" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="9.0.16" />
