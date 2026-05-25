@@ -132,6 +132,7 @@ public static partial class AppHost
         services.AddSingleton<ShellViewModel>();
         services.AddSingleton<Shell>();
         services.AddSingleton<MainWindow>();
+        services.AddTransient<DashboardViewModel>();
 
         services.AddDbContext<WinAIBarDbContext>((sp, options) =>
         {

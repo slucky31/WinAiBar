@@ -12,3 +12,11 @@ winget install SQLite.SQLite
  Log : %LOCALAPPDATA%\WinAIBar\logs
 
 [ccstatusline — Claude Code status line reference](https://github.com/sirmalloc/ccstatusline)
+
+notepad $PROFILE
+
+$env:GITHUB_TOKEN = (Read-Host "GitHub token")
+$env:CLAUDE_CODE_USE_POWERSHELL_TOOL=1
+$env:ANTHROPIC_MODEL = "sonnet"
+
+ fix the comment review of the pr (use mcp)
