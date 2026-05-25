@@ -18,6 +18,7 @@ using WinAIBar.Core.Services.GitHub;
 using WinAIBar.Core.Services.Navigation;
 using WinAIBar.Core.ViewModels;
 using WinAIBar.Services.Navigation;
+using WinAIBar.Services.Tray;
 using WinAIBar.Views;
 
 namespace WinAIBar.Infrastructure;
@@ -143,6 +144,9 @@ public static partial class AppHost
             new AnthropicCredentialProvider(
                 path => File.Exists(path) ? File.ReadAllText(path) : null,
                 sp.GetRequiredService<ILogger<AnthropicCredentialProvider>>()));
+
+        services.AddSingleton<ITrayIconRenderer, TrayIconRenderer>();
+        services.AddSingleton<TrayController>();
 
         services.AddSingleton<IIdleDetector, IdleDetector>();
         services.AddSingleton<IClaudeStateService, ClaudeStateService>();
